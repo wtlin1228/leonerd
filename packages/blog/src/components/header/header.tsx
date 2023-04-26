@@ -12,8 +12,10 @@ import {
   setPreference,
   ThemeToggle,
 } from '../theme-toggle/theme-toggle';
+import { GithubLogo } from '../icons/github-logo';
 
 import styles from './header.css?inline';
+import { LinkedinLogo } from '../icons/linkedin-logo';
 
 export default component$(() => {
   useStylesScoped$(styles);
@@ -49,7 +51,9 @@ export default component$(() => {
             href="https://qwik.builder.io/docs/components/overview/"
             target="_blank"
           >
-            Docs
+            <span>
+              <GithubLogo width={22} height={22} />
+            </span>
           </a>
         </li>
         <li>
@@ -57,7 +61,9 @@ export default component$(() => {
             href="https://qwik.builder.io/examples/introduction/hello-world/"
             target="_blank"
           >
-            Examples
+            <span>
+              <LinkedinLogo width={22} height={22} />
+            </span>
           </a>
         </li>
         <li>
