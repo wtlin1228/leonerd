@@ -4,18 +4,20 @@ import {
   useStylesScoped$,
   useVisibleTask$,
 } from '@builder.io/qwik';
+
 import { GlobalStore } from '../../context';
-import { QwikLogo } from '../icons/qwik';
 import {
   colorSchemeChangeListener,
   getColorPreference,
   setPreference,
   ThemeToggle,
 } from '../theme-toggle/theme-toggle';
+
+import { LeoNerdLogo } from '../icons/leonerd-logo';
 import { GithubLogo } from '../icons/github-logo';
+import { LinkedinLogo } from '../icons/linkedin-logo';
 
 import styles from './header.css?inline';
-import { LinkedinLogo } from '../icons/linkedin-logo';
 
 export default component$(() => {
   useStylesScoped$(styles);
@@ -39,9 +41,8 @@ export default component$(() => {
     <header>
       <div class="logo">
         <a href="/">
-          {/* TODO: Change to my LOGO */}
-          <span class="sr-only">Blog Homepage</span>
-          <QwikLogo />
+          <span class="sr-only">LeoNerd Homepage</span>
+          <LeoNerdLogo />
         </a>
       </div>
       <ul>
