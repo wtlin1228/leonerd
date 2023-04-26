@@ -38,7 +38,9 @@ export default component$(() => {
   return (
     <header>
       <div class="logo">
-        <a href="https://qwik.builder.io/" target="_blank">
+        <a href="/">
+          {/* TODO: Change to my LOGO */}
+          <span class="sr-only">Leo Blog Homepage</span>
           <QwikLogo />
         </a>
       </div>
@@ -47,31 +49,17 @@ export default component$(() => {
           <ThemeToggle />
         </li>
         <li>
-          <a
-            href="https://qwik.builder.io/docs/components/overview/"
-            target="_blank"
-          >
+          <a href="https://github.com/wtlin1228" target="_blank">
             <span>
               <GithubLogo width={22} height={22} />
             </span>
           </a>
         </li>
         <li>
-          <a
-            href="https://qwik.builder.io/examples/introduction/hello-world/"
-            target="_blank"
-          >
+          <a href="https://www.linkedin.com/in/wtlin1228/" target="_blank">
             <span>
               <LinkedinLogo width={22} height={22} />
             </span>
-          </a>
-        </li>
-        <li>
-          <a
-            href="https://qwik.builder.io/tutorial/welcome/overview/"
-            target="_blank"
-          >
-            Tutorials
           </a>
         </li>
       </ul>
