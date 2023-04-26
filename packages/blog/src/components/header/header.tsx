@@ -40,7 +40,7 @@ export default component$(() => {
       <div class="logo">
         <a href="/">
           {/* TODO: Change to my LOGO */}
-          <span class="sr-only">Leo Blog Homepage</span>
+          <span class="sr-only">Blog Homepage</span>
           <QwikLogo />
         </a>
       </div>

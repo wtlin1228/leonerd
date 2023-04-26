@@ -1,8 +1,12 @@
 header {
   display: flex;
   justify-content: space-between;
+  height: 80px;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
+/* TODO: Change to my LOGO */
 header .logo a {
   display: inline-block;
   padding: 10px 10px 7px 20px;
@@ -10,16 +14,16 @@ header .logo a {
 
 header ul {
   height: 100%;
-  padding: 3px 10px 0 0;
+  flex-grow: 1;
+  padding-bottom: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 header li {
-  display: inline-block;
-  padding: 15px 10px;
-}
-
-header li a {
-  display: inline-block;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 header li a:hover svg {
