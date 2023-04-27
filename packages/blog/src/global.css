@@ -45,9 +45,15 @@
 
 :root {
   color-scheme: light;
+  --scroll-margin-top: 30px;
 
   --bg-color: #ffffff;
   --text-color: #0e201a;
+  --secondary-text-color: #171a19;
+  --interactive-text-color: #d23669;
+
+  --code-bg-color: #e0e0e0;
+  --code-border-color: #bfbfbf;
 }
 
 :root[data-theme='dark'] {
@@ -55,6 +61,11 @@
 
   --bg-color: #101010;
   --text-color: #e3e2e9;
+  --secondary-text-color: #ffffffc3;
+  --interactive-text-color: #ffa7c4;
+
+  --code-bg-color: #1d1d1d;
+  --code-border-color: #525252;
 }
 
 html {
