@@ -1,0 +1,386 @@
+---
+title: Visualize React Fiber Tree with ASCII Art
+excerpt: Dive into traversing the React fiber tree, extracting key data, and representing the tree structure using ASCII characters. This visualization aids in understanding React's rendering engine and its inner workings.
+date: 2022-04-05
+tags: [react, react-fiber]
+featured: post-covers/visualize-react-fiber-tree-with-ascii-art.jpg
+---
+
+# Visualize React Fiber Tree with ASCII Art
+
+React Fiber represents a significant shift in the framework's internal engine, designed to enhance performance and optimize its functionality. Introduced as the default reconciler in React 16 and later versions, Fiber is a comprehensive overhaul of React's reconciliation algorithm that addresses various longstanding issues.
+
+As a frontend developer who frequently uses React, I find it crucial to delve deeper into the inner workings of this popular framework. For those who share this curiosity, I've visualized the React Fiber tree to provide insights into its construction, work scheduling, and the intricacies of the render and commit phases.
+
+## Demo: React Fiber Tree Visualization
+
+Consider the following example of an `<App>` React component:
+
+{/* prettier-ignore-start */}
+
+```tsx title="App.tsx"
+const App = () => (
+  <A>
+    <div>
+      <B1>
+        <div><C1 /></div>
+        <div><C2 /></div>
+        <div><C3 /></div>
+      </B1>
+      <B2>
+        <div><C4 /></div>
+        <div><C5 /></div>
+        <div><C6 /></div>
+      </B2>
+      <B3>
+        <div><C7 /></div>
+        <div><C8 /></div>
+        <div><C9 /></div>
+      </B3>
+    </div>
+  </A>
+)
+```
+
+{/* prettier-ignore-end */}
+
+The `<App>` component can be visually represented as follows:
+
+```text title="console output"
+HostRoot─────App─────A─────div─────B1─────div─────C1────'c1'
+                                    │              │
+                                    │             C2────'c2'
+                                    │              │
+                                    │             C3────'c3'
+                                    │
+                                   B2─────div─────C4────'c4'
+                                    │              │
+                                    │             C5────'c5'
+                                    │              │
+                                    │             C6────'c6'
+                                    │
+                                   B3─────div─────C7────'c7'
+                                                   │
+                                                  C8────'c8'
+                                                   │
+                                                  C9────'c9'
+```
+
+This visualization helps to illustrate the structure of the component tree, with each level of indentation corresponding to a nested component.
+
+<img
+  src="https://media.giphy.com/media/8lvpUQmGJXaP8JjUcx/giphy.gif"
+  alt="console output demo video"
+/>
+
+## Generating the ASCII Art Fiber Tree
+
+### Determine What to Show
+
+To effectively display fiber components, I first need to determine which attributes to show. Each fiber has a tag that can be used to identify its display name. For this debug tool, I'll focus on five key tags:
+
+- `FunctionComponent`
+- `IndeterminateComponent`: Represents a component before it is classified as either a function or a class.
+- `HostRoot`: Denotes the root of a host tree, which may be nested within another node.
+- `HostComponent`: Corresponds to HTML elements such as `div`, `p`, etc. in the DOM.
+- `HostText`
+
+```ts title="packages/react-reconciler/leonerdDebugTools.js"
+import type { Fiber } from './src/ReactInternalTypes';
+
+import {
+  FunctionComponent,
+  IndeterminateComponent,
+  HostRoot,
+  HostComponent,
+  HostText,
+} from './src/ReactWorkTags';
+
+function getFiberDisplayName(fiber: Fiber | null): string {
+  if (fiber === null) {
+    return '';
+  }
+
+  switch (fiber.tag) {
+    case FunctionComponent:
+    case IndeterminateComponent:
+      // ex: App, A, B1, B2, B3, C1, ...
+      return fiber.elementType.displayName;
+
+    case HostRoot:
+      return 'HostRoot';
+
+    case HostComponent:
+      // ex: div, p, ...
+      return fiber.elementType;
+
+    case HostText:
+      // ex: c1, c2, c3, ...
+      return fiber.stateNode?.textContent || fiber.pendingProps;
+  }
+}
+```
+
+### Exploring the General Pattern of React
+
+To traverse the fiber tree, I'll utilize the following general pattern in React:
+
+```ts
+function doSomething(fiber) {
+  // Perform actions based on fiber.tag
+
+  if (fiber.child) {
+    doSomething(fiber.child);
+  }
+
+  if (fiber.sibling) {
+    doSomething(fiber.sibling);
+  }
+}
+```
+
+**Note**: Fibers are connected to one another through the pointers: `return`, `sibling`, and `child`. This pattern allows us to efficiently navigate the fiber tree and perform specific actions depending on each fiber's tag.
+
+Using this pattern, I can collect all the necessary information for a line and draw it when `fiber.child` is `null`. To keep track of the traversing path, I'll only draw the ASCII Art lines when `fiber.child` is `null`. Here's the extended code:
+
+```ts
+function gatherAsciiArtTreeRecursively(fiber, path) {
+  if (fiber.child === null) {
+    // generate the ASCII Art lines here
+  }
+
+  if (fiber.child) {
+    gatherAsciiArtTreeRecursively(fiber.child, [...path, node.child]);
+  }
+
+  if (fiber.sibling) {
+    gatherAsciiArtTreeRecursively(fiber.sibling, [
+      ...path.slice(0, path.length - 1),
+      fiber.sibling,
+    ]);
+  }
+}
+```
+
+### Generating ASCII Art Lines Based on the Path
+
+`getAsciiArtLines` will be called when `fiber.child` is `null`. It will generate two ASCII Art lines:
+
+- The first line represents the current path.
+- The second line serves as a connector between the lines of the current path and the next path.
+
+```ts title="packages/react-reconciler/leonerdDebugTools.js"
+const PAD_START_LENGTH = 8;
+
+function getAsciiArtLines({
+  path,
+  lookupMap,
+  workInProgress,
+}: {
+  path: Fiber[];
+  lookupMap: Map<Fiber, boolean>;
+  workInProgress: Fiber | null;
+}) {
+  let isFirstDashedPrint = true;
+
+  return [
+    // first line, example:
+    // "HostRoot─────App─────A─────div─────B1─────div──────C1─────'c1'"
+    path.reduce((acc, curr) => {
+      if (lookupMap.get(curr)) {
+        if (curr.sibling) {
+          return acc + '│'.padStart(PAD_START_LENGTH, ' ');
+        } else {
+          return acc + ' '.padStart(PAD_START_LENGTH, ' ');
+        }
+      } else {
+        lookupMap.set(curr, true);
+
+        let padStartString = '─';
+        if (isFirstDashedPrint) {
+          isFirstDashedPrint = false;
+          padStartString = ' ';
+        }
+
+        const displayName = getFiberDisplayName(curr);
+
+        if (curr === workInProgress) {
+          return (
+            acc +
+            padStartWithCoralChalk({
+              source: displayName,
+              padStartLength: PAD_START_LENGTH,
+              padStartString: padStartString,
+            })
+          );
+        } else {
+          return acc + displayName.padStart(PAD_START_LENGTH, padStartString);
+        }
+      }
+    }, ''),
+    // second line, example:
+    // "                                       │               │        "
+    path.reduce((acc, curr) => {
+      const char = curr.sibling === null ? ' ' : '│';
+      return acc + char.padStart(PAD_START_LENGTH, ' ');
+    }, ''),
+  ];
+}
+```
+
+**Note**: I pass `workInProgress` to `getAsciiArtLines` so I can color the `workInProgress` fiber with carol chalk.
+
+**Note**: Each fiber could be colored with different chalk based on `fiber.flags` if I want to see which fiber is incomplete or has other states.
+
+### Accessing the `FiberRoot`
+
+To access the entire fiber tree, we need to find an entry point then retain the `FiberRoot`. I've chosen to do this within the [updateContainer](https://github.com/facebook/react/blob/v18.0.0/packages/react-reconciler/src/ReactFiberReconciler.new.js#L381) function of `ReactFiberReconciler.new.js`.
+
+```ts /leonerd__setFiberRoot(root)/#a title="packages/react-reconciler/src/ReactFiberReconciler.new.js"
+export function updateContainer(
+  element: ReactNodeList,
+  container: OpaqueRoot,
+  parentComponent: ?React$Component<any, any>,
+  callback: ?Function
+): Lane {
+  // emit...
+
+  const root = scheduleUpdateOnFiber(current, lane, eventTime);
+
+  // I prefix my utils with "leonerd__" to distinguish them from the original code.
+  leonerd__setFiberRoot(root);
+
+  // emit...
+}
+```
+
+```ts /leonerd__setFiberRoot/#a title="packages/react-reconciler/leonerdDebugTools.js"
+import type { FiberRoot } from './src/ReactInternalTypes';
+
+let fiberRoot;
+
+export function leonerd__setFiberRoot(root: FiberRoot): void {
+  fiberRoot = root;
+}
+```
+
+### Util Function: Coloring with `Chalk`
+
+To handle the coloring tasks, I'll use `Chalk` since it's already installed within React.
+
+```ts title="packages/react-reconciler/leonerdDebugTools.js"
+import chalk from 'chalk';
+
+const CORAL_CHALK = 'FE7D6A';
+const PARAKEET_CHALK = '03C04A';
+
+function makePadStartWithChalkColor(chalkColor: CORAL_CHALK | PARAKEET_CHALK) {
+  return function padStartWithChalkColor({
+    source,
+    padStartLength,
+    padStartString,
+  }: {
+    source: string;
+    padStartLength: number;
+    padStartString: string;
+  }) {
+    return (
+      Array.from(
+        { length: padStartLength - source.length },
+        () => padStartString
+      ).join('') + chalk.hex(chalkColor)(source)
+    );
+  };
+}
+
+const padStartWithCoralChalk = makePadStartWithChalkColor(CORAL_CHALK);
+const padStartWithParakeetChalk = makePadStartWithChalkColor(PARAKEET_CHALK);
+```
+
+The `makePadStartWithChalkColor` function generates a utility function that applies the specified chalk color to a given string. This utility function pads the string with a specified character and ensures that the colored text aligns properly within the ASCII Art representation of the fiber tree.
+
+## Drawing the Tree
+
+Finally, we can draw the tree.
+
+### Drawing the `current` tree
+
+The entry point of `current` tree is `fiberRoot.current`.
+
+{/* prettier-ignore-start */}
+
+```ts /fiberRoot.current/#a title="packages/react-reconciler/leonerdDebugTools.js"
+export function leonerd__showCurrentFiberTree(
+  workInProgress: Fiber | null
+): void {
+  const asciiArtTree = getAsciiArtTree(
+    fiberRoot.current,
+    workInProgress
+  )
+
+  console.log(
+    [
+      "current fiber tree:",
+      "\n",
+      ...asciiArtTree
+    ].join("\n")
+  )
+}
+```
+
+{/* prettier-ignore-end */}
+
+### Drawing the `workInProgress` tree
+
+The entry point of `workInProgress` tree is `fiberRoot.current.alternate`.
+
+{/* prettier-ignore-start */}
+
+```ts /fiberRoot.current.alternate/#a title="packages/react-reconciler/leonerdDebugTools.js"
+export function leonerd__showWorkInProgressFiberTree(
+  workInProgress: Fiber | null
+): void {
+  const asciiArtTree = getAsciiArtTree(
+    fiberRoot.current.alternate,
+    workInProgress
+  )
+
+  console.log(
+    [
+      "workInProgress fiber tree:",
+      "\n",
+      ...asciiArtTree
+    ].join("\n")
+  )
+}
+```
+
+{/* prettier-ignore-end */}
+
+These two functions, `leonerd__showCurrentFiberTree` and `leonerd__showWorkInProgressFiberTree`, allow you to visualize the current and workInProgress fiber trees, respectively. By utilizing the ASCII Art representation, you can easily inspect the structure and state of your React application's fiber trees.
+
+```text title="console output"
+HostRoot─────App─────A─────div─────B1─────div─────C1────'c1'
+                                    │              │
+                                    │             C2────'c2'
+                                    │              │
+                                    │             C3────'c3'
+                                    │
+                                   B2─────div─────C4────'c4'
+                                    │              │
+                                    │             C5────'c5'
+                                    │              │
+                                    │             C6────'c6'
+                                    │
+                                   B3─────div─────C7────'c7'
+                                                   │
+                                                  C8────'c8'
+                                                   │
+                                                  C9────'c9'
+```
+
+## Conclusion
+
+I hope you find this visualization of the React Fiber tree with ASCII Art helpful for your understanding of React's inner workings. By traversing the fiber tree, you can extract relevant information and visualize the component structure in a more intuitive manner. This method enables you to inspect both the current and workInProgress trees during different stages of the reconciliation process, facilitating easier debugging and a deeper comprehension of React's rendering engine.
+
+Don't hesitate to experiment with this tool and further customize it to suit your specific needs. By delving into React's core, you can improve your skills as a frontend developer and gain valuable insights into the popular framework. Happy coding!

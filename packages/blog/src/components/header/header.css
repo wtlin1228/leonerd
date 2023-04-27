@@ -1,0 +1,33 @@
+header {
+  display: flex;
+  justify-content: space-between;
+  height: 80px;
+  max-width: 1200px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+header .logo a {
+  display: inline-block;
+  padding: 16px 10px 7px 6px;
+}
+
+header ul {
+  height: 100%;
+  flex-grow: 1;
+  padding-bottom: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+header li {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+header li a:hover svg {
+  opacity: 0.8;
+}
