@@ -150,6 +150,9 @@ h6 a:hover .icon {
   line-height: 1.28;
 }
 
+.post article pre code[data-language='js'],
+.post article pre code[data-language='jsx'],
+.post article pre code[data-language='ts'],
 .post article pre code[data-language='tsx'] {
   font-family: Menlo, Monaco, 'Lucida Console', Consolas, 'Courier New',
     monospace;

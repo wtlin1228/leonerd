@@ -88,3 +88,8 @@ select {
 body {
   @apply antialiased min-h-screen;
 }
+
+code .line.line--highlighted {
+  background: rgba(200, 200, 255, 0.1);
+  border-left-color: #60a5fa;
+}
