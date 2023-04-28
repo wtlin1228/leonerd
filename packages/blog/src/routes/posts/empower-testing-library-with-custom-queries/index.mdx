@@ -1,0 +1,227 @@
+---
+title: Empower Testing Library with Custom Queries
+excerpt: Enhance your Testing Library experience by creating and using custom queries.
+date: 2022-12-15
+tags: [testing, testing-library]
+slug: empower-testing-library-with-custom-queries
+featured: images/cover.jpg
+---
+
+# Empower Testing Library with Custom Queries
+
+[Testing Library](https://testing-library.com/) offers simple and complete testing utilities that encourage good testing practices. It provides many convenient queries, such as `ByRole` and `ByLabelText`. Furthermore, it also allows us to create our own custom queries.
+
+These queries can be utilized in three ways:
+
+- render
+
+  ```js
+  const { getByText } = render(<App />);
+  getByText('Paddle Roll');
+  ```
+
+- screen
+
+  ```js
+  render(<App />);
+  screen.getByText('Cramp Roll');
+  ```
+
+- within
+
+  ```js
+  render(<App />);
+  within(stage).getByText('Shim Sham Shimmy');
+  ```
+
+Creating custom queries like `getByCustomQuery` and `findByCustomQuery` can greatly enhance the testing experience while reducing repetitive testing code, just as the custom render method effectively includes all providers for us.
+
+In this post, we will explore the reasons for creating custom queries for Testing Library and demonstrate how to do so effectively.
+
+**Note**: For further details, you can also refer to the official documentation on [Add custom queries](https://testing-library.com/docs/react-testing-library/setup/#add-custom-queries), pending the merge of this [PR](https://github.com/testing-library/testing-library-docs/pull/1191/files).
+
+## Reason: The Thousand Separator for Numbers
+
+Frontend developers often need to display prices with thousand separators:
+
+```js
+const price = thousandSeparator('1234567');
+console.log(price); // '1,234,567'
+```
+
+In your tests, you might need to import the thousandSeparator function every time you want to test a number with a thousand separator:
+
+```jsx
+import thousandSeparator from 'some-where';
+
+it('...', () => {
+  // Arrange
+  const price = '1234567';
+  render(<Price price={price} />);
+
+  // Assert
+  const thousandSeparatedPrice = thousandSeparator(price);
+  expect(screen.getByText(thousandSeparatedPrice)).toBeInTheDocument();
+});
+```
+
+While this works, the developer experience can be improved. Let's create a custom query for this purpose. It's easy with the `buildQueries` provided by Testing Library.
+
+## Implementing a Custom Query
+
+Simply define two error handlers, `getMultipleError` and `getMissingError`.
+
+That's it!
+
+```js {25-32} /thousandSeparator/#a /buildQueries/#b title="test-utils/custom-queries/byThousandSeparatedNumber.js"
+import { buildQueries, queryAllByText } from '@testing-library/react';
+import thousandSeparator from 'utils/thousandSeparator';
+
+const queryAllByThousandSeparatedNumber = (container, id, options) =>
+  queryAllByText(container, thousandSeparator(id), options);
+
+const getMultipleError = (container, thousandSeparatedNumber) =>
+  `Found multiple elements with the number: ${thousandSeparatedNumber}`;
+
+const getMissingError = (container, thousandSeparatedNumber) =>
+  `Unable to find an element with the number: ${thousandSeparatedNumber}`;
+
+const [
+  queryByThousandSeparatedNumber,
+  getAllByThousandSeparatedNumber,
+  getByThousandSeparatedNumber,
+  findAllByThousandSeparatedNumber,
+  findByThousandSeparatedNumber,
+] = buildQueries(
+  queryAllByThousandSeparatedNumber,
+  getMultipleError,
+  getMissingError
+);
+
+export {
+  queryByThousandSeparatedNumber,
+  queryAllByThousandSeparatedNumber,
+  getByThousandSeparatedNumber,
+  getAllByThousandSeparatedNumber,
+  findAllByThousandSeparatedNumber,
+  findByThousandSeparatedNumber,
+};
+```
+
+## Making Custom Queries Global
+
+Suppose we are re-exporting all custom queries in the `custom-queries`.
+
+```ts {25-30} /allQueries/#a /customQueries/#b title="test-utils/index.ts"
+import type { RenderOptions } from '@testing-library/react';
+import type { ReactElement } from 'react';
+
+import { render, queries, within } from '@testing-library/react';
+import * as customQueries from './custom-queries';
+
+// Combine custom queries with default queries.
+const allQueries = {
+  ...queries,
+  ...customQueries,
+};
+
+// Include all queries in the custom screen.
+const customScreen = within(document.body, allQueries);
+
+// Include all queries in the custom within function.
+const customWithin = (element: ReactElement) => within(element, allQueries);
+
+// Include all queries in the custom render function.
+const customRender = (
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'queries'>
+) => render(ui, { queries: allQueries, ...options });
+
+export * from '@testing-library/react';
+export {
+  customScreen as screen,
+  customWithin as within,
+  customRender as render,
+};
+```
+
+## Testing our Custom Query
+
+Having created the `*ByThousandSeparatedNumber` query and customized render, screen, and within, let's write some simple tests to verify them.
+
+```tsx /getByThousandSeparatedNumber(12345678)/#a /getAllByThousandSeparatedNumber(9888777666)/#a /queryByThousandSeparatedNumber(12345678)/#a /queryAllByThousandSeparatedNumber(9888777666)/#a /findByThousandSeparatedNumber(12345678)/#a /findAllByThousandSeparatedNumber(9888777666)/#a title="test-utils/custom-queries/__tests__/byThousandSeparatedNumber.test.js"
+import { render, screen, within } from "../../test-utils"
+
+it("get*ByThousandSeparatedNumber", () => {
+  const {
+    getByThousandSeparatedNumber,
+    getAllByThousandSeparatedNumber
+  } = render(
+    <div data-fe-test-id="test-id">
+      <p>12,345,678</p>
+      <p>9,888,777,666</p>
+      <p>9,888,777,666</p>
+    </div>
+  )
+
+  expect(getByThousandSeparatedNumber(12345678)).toBeInTheDocument()
+  expect(getAllByThousandSeparatedNumber(9888777666)).toHaveLength(2)
+
+  expect(screen.getByThousandSeparatedNumber(12345678)).toBeInTheDocument()
+  expect(screen.getAllByThousandSeparatedNumber(9888777666)).toHaveLength(2)
+
+  const wrapper = screen.getByTestId("test-id")
+  expect(within(wrapper).getByThousandSeparatedNumber(12345678)).toBeInTheDocument()
+  expect(within(wrapper).getAllByThousandSeparatedNumber(9888777666)).toHaveLength(2)
+})
+
+it("query*ByThousandSeparatedNumber", () => {
+  const {
+    queryByThousandSeparatedNumber,
+    queryAllByThousandSeparatedNumber
+  } = render(
+    <div data-fe-test-id="test-id">
+      Hello, ThousandSeparatedNumber Query
+    </div>
+  )
+
+  expect(queryByThousandSeparatedNumber(12345678)).not.toBeInTheDocument()
+  expect(queryAllByThousandSeparatedNumber(9888777666)).toHaveLength(0)
+
+  expect(screen.queryByThousandSeparatedNumber(12345678)).not.toBeInTheDocument()
+  expect(screen.queryAllByThousandSeparatedNumber(9888777666)).toHaveLength(0)
+
+  const wrapper = screen.getByTestId("test-id")
+  expect(within(wrapper).queryByThousandSeparatedNumber(12345678)).not.toBeInTheDocument()
+  expect(within(wrapper).queryAllByThousandSeparatedNumber(9888777666)).toHaveLength(0)
+})
+
+it("find*ByThousandSeparatedNumber", async () => {
+  const {
+    findByThousandSeparatedNumber,
+    findAllByThousandSeparatedNumber
+  } = render(
+    <div data-fe-test-id="test-id">
+      <p>12,345,678</p>
+      <p>9,888,777,666</p>
+      <p>9,888,777,666</p>
+    </div>
+  )
+
+  expect(await findByThousandSeparatedNumber(12345678)).toBeInTheDocument()
+  expect(await findAllByThousandSeparatedNumber(9888777666)).toHaveLength(2)
+
+  expect(await screen.findByThousandSeparatedNumber(12345678)nTheDocument()
+  expect(await screen.findAllByThousandSeparatedNumber(9888777666)eLength(2)
+
+  const wrapper = screen.getByTestId("test-id")
+  expect(await within(wrapper).findByThousandSeparatedNumber(12345678)).toBeInTheDocument()
+  expect(await within(wrapper).findAllByThousandSeparatedNumber(9888777666)).toHaveLength(2)
+})
+```
+
+## Conclusion
+
+By structuring your code in this manner, the next time you need a new custom query, you can simply create one under the `test-utils/custom-queries/` folder and start using it in your tests right away. This approach makes your testing process more efficient and streamlined.
+
+Happy testing!
