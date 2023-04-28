@@ -19,7 +19,7 @@ import { LinkedinLogo } from '../icons/linkedin-logo';
 
 import styles from './header.css?inline';
 
-export default component$(() => {
+export const Header = component$(() => {
   useStylesScoped$(styles);
 
   const globalStore = useContext(GlobalStore);
@@ -42,7 +42,7 @@ export default component$(() => {
       <div class="logo">
         <a href="/">
           <span class="sr-only">LeoNerd Homepage</span>
-          <LeoNerdLogo />
+          <LeoNerdLogo width={103} />
         </a>
       </div>
       <ul>

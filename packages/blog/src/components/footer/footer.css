@@ -1,0 +1,49 @@
+.container {
+  @apply px-6 mx-auto;
+  max-width: 1200px;
+}
+
+footer {
+  margin-top: 12px;
+  padding-bottom: 32px;
+  padding-top: 32px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+}
+
+.logo-bar li {
+  display: inline-block;
+  margin-left: 16px;
+}
+
+.logo-bar li a:hover svg {
+  opacity: 0.8;
+}
+
+.divider {
+  border-top: 1px solid currentColor;
+  font-size: 11px;
+  font-weight: 300;
+  margin-top: 13.3333px;
+  padding-top: 0.35em;
+}
+
+.copyright {
+  font-size: 11px;
+  font-weight: 300;
+  margin-top: 1px;
+  padding-top: 0.35em;
+}
+
+@media (max-width: 900px) {
+  .copyright {
+    margin-top: 12.1875px;
+  }
+}

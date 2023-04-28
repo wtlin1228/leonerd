@@ -1,8 +1,12 @@
-export const LeoNerdLogo = () => (
+interface LeoNerdLogoProps {
+  width: number;
+}
+
+export const LeoNerdLogo = ({ width }: LeoNerdLogoProps) => (
   <svg
     viewBox="0 0 155 83"
     fill="none"
-    width="88"
+    width={width}
     role="img"
     aria-label="LeoNerd Logo"
   >
