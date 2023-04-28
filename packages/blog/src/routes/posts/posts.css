@@ -1,15 +1,20 @@
+/*
+ * This CSS file will be loaded globally, remember to add .post
+ * before every common selectors to avoid conflicts.
+ */
+
 .post main {
   @apply mx-auto min-h-[100vh] xl:max-w-[1200px];
 }
 
 .post .post-container {
-  @apply pt-8;
+  @apply py-8;
   @apply px-8;
 
   /* medium */
 
   /* large */
-  @apply lg:pt-5 lg:mx-[4rem] lg:px-0;
+  @apply lg:pt-16 lg:mx-[4rem] lg:px-0;
 
   /* xlarge */
   @apply xl:pr-16 xl:mx-[6rem];
@@ -69,21 +74,21 @@
   height: 1em;
 }
 
-.icon-link {
+.post .icon-link {
   display: none;
 }
 
-.icon-link::after {
+.post .icon-link::after {
   position: absolute;
   content: '#';
   left: -1em;
 }
 
-h2 a:hover .icon,
-h3 a:hover .icon,
-h4 a:hover .icon,
-h5 a:hover .icon,
-h6 a:hover .icon {
+.post h2 a:hover .icon,
+.post h3 a:hover .icon,
+.post h4 a:hover .icon,
+.post h5 a:hover .icon,
+.post h6 a:hover .icon {
   display: inline;
 }
 
