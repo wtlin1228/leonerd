@@ -54,6 +54,7 @@
 
   --code-bg-color: #e0e0e0;
   --code-border-color: #bfbfbf;
+  --blockquote-bg-color: #f1f5fe;
 }
 
 :root[data-theme='dark'] {
@@ -66,6 +67,7 @@
 
   --code-bg-color: #1d1d1d;
   --code-border-color: #525252;
+  --blockquote-bg-color: #353639;
 }
 
 html {
