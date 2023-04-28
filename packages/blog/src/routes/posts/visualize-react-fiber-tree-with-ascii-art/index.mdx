@@ -6,6 +6,8 @@ tags: [react, react-fiber]
 featured: post-covers/visualize-react-fiber-tree-with-ascii-art.jpg
 ---
 
+import { Image } from '../../../components/image/image.tsx';
+
 # Visualize React Fiber Tree with ASCII Art
 
 React Fiber represents a significant shift in the framework's internal engine, designed to enhance performance and optimize its functionality. Introduced as the default reconciler in React 16 and later versions, Fiber is a comprehensive overhaul of React's reconciliation algorithm that addresses various longstanding issues.
@@ -68,9 +70,9 @@ HostRoot─────App─────A─────div─────B1─
 
 This visualization helps to illustrate the structure of the component tree, with each level of indentation corresponding to a nested component.
 
-<img
-  src="https://media.giphy.com/media/8lvpUQmGJXaP8JjUcx/giphy.gif"
-  alt="console output demo video"
+<Image
+  imgSrc="https://media.giphy.com/media/8lvpUQmGJXaP8JjUcx/giphy.gif"
+  imgAlt="console output demo video"
 />
 
 ## Generating the ASCII Art Fiber Tree
