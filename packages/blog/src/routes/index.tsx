@@ -1,5 +1,10 @@
 import { component$ } from '@builder.io/qwik';
-import { routeLoader$, type DocumentHead } from '@builder.io/qwik-city';
+import {
+  routeLoader$,
+  zod$,
+  z,
+  type DocumentHead,
+} from '@builder.io/qwik-city';
 
 import fs from 'fs/promises';
 import { read } from 'to-vfile';
@@ -7,28 +12,54 @@ import { matter } from 'vfile-matter';
 
 const POST_PATH_PREFIX = 'packages/blog/src/routes/posts';
 
-export const usePostMatters = routeLoader$(async () => {
-  const subdirectories = await fs.readdir(POST_PATH_PREFIX, {
-    withFileTypes: true,
-  });
+const postMatterSchema = z.object({
+  title: z.string(),
+  excerpt: z.string(),
+  date: z.string(),
+  tags: z.array(z.string()),
+  featured: z.string(),
+});
 
-  return await Promise.all(
-    subdirectories
-      .filter((directory) => directory.isDirectory())
-      .map((directory) =>
-        read(`${POST_PATH_PREFIX}/${directory.name}/index.mdx`)
-      )
-  ).then(
-    (files) =>
-      files
-        .map((file) => {
-          matter(file, { strip: true });
-          return file.data;
-        })
-        .filter(({ matter }) => matter.title !== undefined)
-    // TODO: sort by date
-    // TODO: validate frontmatter with zod schema
-  );
+type PostMatter = z.infer<typeof postMatterSchema>;
+
+export const usePostMatters = routeLoader$(async (requestEvent) => {
+  try {
+    const subdirectories = await fs.readdir(POST_PATH_PREFIX, {
+      withFileTypes: true,
+    });
+
+    const vFiles = await Promise.all(
+      subdirectories
+        .filter((directory) => directory.isDirectory())
+        .map((directory) =>
+          read(`${POST_PATH_PREFIX}/${directory.name}/index.mdx`).then(
+            (vFile) => matter(vFile, { strip: true })
+          )
+        )
+    );
+
+    const postMatters = vFiles.reduce<PostMatter[]>((acc, vFile) => {
+      try {
+        const postMatter = postMatterSchema.parse(vFile.data.matter);
+        acc.push(postMatter);
+      } catch {
+        console.error(`[IGNORE] invalid frontmatter: ${vFile.path}`);
+      }
+
+      return acc;
+    }, []);
+
+    return postMatters.sort((a, b) => {
+      const dateA: Date = new Date(a.date);
+      const dateB: Date = new Date(b.date);
+
+      return dateA.getTime() - dateB.getTime();
+    });
+  } catch {
+    return requestEvent.fail(404, {
+      errorMessage: 'Failed to process the frontmatter of posts',
+    });
+  }
 });
 
 export default component$(() => {

@@ -36,8 +36,5 @@
     "vite-plugin-eslint": "^1.8.1",
     "vite-tsconfig-paths": "~4.0.7",
     "vitest": "^0.28.5"
-  },
-  "dependencies": {
-    "zod": "3.21.4"
   }
 }
