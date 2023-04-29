@@ -20,10 +20,12 @@ export const usePostMatters = routeLoader$(async () => {
       )
   ).then(
     (files) =>
-      files.map((file) => {
-        matter(file, { strip: true });
-        return file.data;
-      })
+      files
+        .map((file) => {
+          matter(file, { strip: true });
+          return file.data;
+        })
+        .filter(({ matter }) => matter.title !== undefined)
     // TODO: sort by date
     // TODO: validate frontmatter with zod schema
   );
