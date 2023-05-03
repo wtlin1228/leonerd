@@ -34,6 +34,13 @@
         }
       }
     },
+    "build.ssg": {
+      "executor": "@nx/vite:build",
+      "options": {
+        "outputPath": "dist/packages/blog",
+        "configFile": "packages/blog/adapters/static/vite.config.ts"
+      }
+    },
     "preview": {
       "executor": "@nx/vite:preview-server",
       "options": {
