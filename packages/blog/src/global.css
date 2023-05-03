@@ -55,6 +55,12 @@
   --code-bg-color: #e0e0e0;
   --code-border-color: #bfbfbf;
   --blockquote-bg-color: #f1f5fe;
+
+  --card-bg-color: #1d1d1d;
+  --card-title-color: #e3e2e9;
+  --card-description-color: rgb(162, 161, 170);
+  --card-author-color: #e3e2e9;
+  --card-date-color: #79787c;
 }
 
 :root[data-theme='dark'] {
@@ -68,6 +74,12 @@
   --code-bg-color: #1d1d1d;
   --code-border-color: #525252;
   --blockquote-bg-color: #353639;
+
+  --card-bg-color: #e0e0e0;
+  --card-title-color: #0e201a;
+  --card-description-color: rgb(49, 51, 50);
+  --card-author-color: #0e201a;
+  --card-date-color: rgb(108, 113, 111);
 }
 
 html {

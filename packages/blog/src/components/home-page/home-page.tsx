@@ -20,14 +20,40 @@ export const HomePage = component$(
 
     return (
       <main>
-        {postMatters.map((matter) => (
-          <>
-            <code>
-              <pre>{JSON.stringify(matter, null, 4)}</pre>
-            </code>
-            <a href={matter.url}>{matter.title}</a>
-          </>
-        ))}
+        <div class="home-container">
+          {postMatters.map((matter, idx) => {
+            let containerClass = 'post-container';
+            if (idx === 0) {
+              containerClass += ' post-container--large';
+            }
+            return (
+              <div class={containerClass}>
+                <article class="card">
+                  <a class="card-image" href={matter.url}>
+                    <img src="https://placekitten.com/1000/640"></img>
+                  </a>
+                  <div class="card-content">
+                    <h3 class="card-title">
+                      <a href={matter.url}>{matter.title}</a>
+                    </h3>
+                    <p class="card-description">
+                      <a href={matter.url}>{matter.excerpt}</a>
+                    </p>
+                    <div class="card-footer">
+                      <div class="card-avatar">
+                        <img src="/github-avatar.png"></img>
+                      </div>
+                      <div>
+                        <p class="card-author">Leo Lin</p>
+                        <p class="card-date">{matter.date}</p>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            );
+          })}
+        </div>
       </main>
     );
   }

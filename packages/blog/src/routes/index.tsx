@@ -49,7 +49,7 @@ export const usePostMattersLoader = routeLoader$(async () => {
       const dateA: Date = new Date(a.date);
       const dateB: Date = new Date(b.date);
 
-      return dateA.getTime() - dateB.getTime();
+      return dateB.getTime() - dateA.getTime();
     });
   } catch {
     console.error('Failed to process the frontmatter of posts');
@@ -60,11 +60,7 @@ export const usePostMattersLoader = routeLoader$(async () => {
 export default component$(() => {
   const postMatters = usePostMattersLoader();
 
-  return (
-    <div>
-      <HomePage postMatters={postMatters.value} />
-    </div>
-  );
+  return <HomePage postMatters={postMatters.value} />;
 });
 
 export const head: DocumentHead = {
