@@ -1,21 +1,16 @@
 import { component$ } from '@builder.io/qwik';
-import { routeLoader$, z, type DocumentHead } from '@builder.io/qwik-city';
+import { routeLoader$, type DocumentHead } from '@builder.io/qwik-city';
+import {
+  HomePage,
+  postMatterSchema,
+  type PostMatter,
+} from '../components/home-page/home-page';
 
 import fs from 'fs/promises';
 import { read } from 'to-vfile';
 import { matter } from 'vfile-matter';
 
 const POST_PATH_PREFIX = 'packages/blog/src/routes/posts';
-
-const postMatterSchema = z.object({
-  title: z.string(),
-  excerpt: z.string(),
-  date: z.string(),
-  tags: z.array(z.string()),
-  featured: z.string(),
-});
-
-type PostMatter = z.infer<typeof postMatterSchema>;
 
 export const usePostMattersLoader = routeLoader$(async () => {
   try {
@@ -37,7 +32,9 @@ export const usePostMattersLoader = routeLoader$(async () => {
       (acc, vFile) => {
         try {
           const postMatter = postMatterSchema.parse(vFile.data.matter);
-          const url = vFile.path.slice(POST_PATH_PREFIX.length);
+          const url =
+            'posts' +
+            vFile.path.slice(POST_PATH_PREFIX.length).replace('/index.mdx', '');
           acc.push({ ...postMatter, url });
         } catch {
           console.error(`[IGNORE] invalid frontmatter: ${vFile.path}`);
@@ -62,16 +59,10 @@ export const usePostMattersLoader = routeLoader$(async () => {
 
 export default component$(() => {
   const postMatters = usePostMattersLoader();
-  console.log(postMatters.value);
+
   return (
     <div>
-      <div>
-        {postMatters.value.map((matter) => (
-          <code>
-            <pre>{JSON.stringify(matter, null, 4)}</pre>
-          </code>
-        ))}
-      </div>
+      <HomePage postMatters={postMatters.value} />
     </div>
   );
 });
