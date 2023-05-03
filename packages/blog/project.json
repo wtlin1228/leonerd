@@ -15,14 +15,14 @@
       }
     },
     "build.client": {
-      "executor": "@nrwl/vite:build",
+      "executor": "@nx/vite:build",
       "options": {
         "outputPath": "dist/packages/blog",
         "configFile": "packages/blog/vite.config.ts"
       }
     },
     "build.ssr": {
-      "executor": "@nrwl/vite:build",
+      "executor": "@nx/vite:build",
       "defaultConfiguration": "preview",
       "options": {
         "outputPath": "dist/packages/blog"
@@ -35,14 +35,14 @@
       }
     },
     "preview": {
-      "executor": "@nrwl/vite:preview-server",
+      "executor": "@nx/vite:preview-server",
       "options": {
         "buildTarget": "blog:build",
         "port": 4300
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test",
+      "executor": "@nx/vite:test",
       "outputs": ["../../coverage/packages/blog"],
       "options": {
         "passWithNoTests": true,
@@ -50,7 +50,7 @@
       }
     },
     "serve": {
-      "executor": "@nrwl/vite:dev-server",
+      "executor": "@nx/vite:dev-server",
       "options": {
         "buildTarget": "blog:build.client",
         "mode": "ssr",
@@ -65,7 +65,7 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/blog/**/*.{ts,tsx,js,jsx}"]
