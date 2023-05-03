@@ -17,7 +17,7 @@ const postMatterSchema = z.object({
 
 type PostMatter = z.infer<typeof postMatterSchema>;
 
-export const usePostMattersLoader = routeLoader$(async (requestEvent) => {
+export const usePostMattersLoader = routeLoader$(async () => {
   try {
     const subdirectories = await fs.readdir(POST_PATH_PREFIX, {
       withFileTypes: true,
@@ -33,16 +33,20 @@ export const usePostMattersLoader = routeLoader$(async (requestEvent) => {
         )
     );
 
-    const postMatters = vFiles.reduce<PostMatter[]>((acc, vFile) => {
-      try {
-        const postMatter = postMatterSchema.parse(vFile.data.matter);
-        acc.push(postMatter);
-      } catch {
-        console.error(`[IGNORE] invalid frontmatter: ${vFile.path}`);
-      }
+    const postMatters = vFiles.reduce<(PostMatter & { url: string })[]>(
+      (acc, vFile) => {
+        try {
+          const postMatter = postMatterSchema.parse(vFile.data.matter);
+          const url = vFile.path.slice(POST_PATH_PREFIX.length);
+          acc.push({ ...postMatter, url });
+        } catch {
+          console.error(`[IGNORE] invalid frontmatter: ${vFile.path}`);
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      },
+      []
+    );
 
     return postMatters.sort((a, b) => {
       const dateA: Date = new Date(a.date);
