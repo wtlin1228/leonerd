@@ -1,10 +1,5 @@
 import { component$ } from '@builder.io/qwik';
-import {
-  routeLoader$,
-  zod$,
-  z,
-  type DocumentHead,
-} from '@builder.io/qwik-city';
+import { routeLoader$, z, type DocumentHead } from '@builder.io/qwik-city';
 
 import fs from 'fs/promises';
 import { read } from 'to-vfile';
@@ -22,7 +17,7 @@ const postMatterSchema = z.object({
 
 type PostMatter = z.infer<typeof postMatterSchema>;
 
-export const usePostMatters = routeLoader$(async (requestEvent) => {
+export const usePostMattersLoader = routeLoader$(async (requestEvent) => {
   try {
     const subdirectories = await fs.readdir(POST_PATH_PREFIX, {
       withFileTypes: true,
@@ -56,16 +51,25 @@ export const usePostMatters = routeLoader$(async (requestEvent) => {
       return dateA.getTime() - dateB.getTime();
     });
   } catch {
-    return requestEvent.fail(404, {
-      errorMessage: 'Failed to process the frontmatter of posts',
-    });
+    console.error('Failed to process the frontmatter of posts');
+    return [];
   }
 });
 
 export default component$(() => {
-  const postMatters = usePostMatters();
+  const postMatters = usePostMattersLoader();
   console.log(postMatters.value);
-  return <div></div>;
+  return (
+    <div>
+      <div>
+        {postMatters.value.map((matter) => (
+          <code>
+            <pre>{JSON.stringify(matter, null, 4)}</pre>
+          </code>
+        ))}
+      </div>
+    </div>
+  );
 });
 
 export const head: DocumentHead = {
