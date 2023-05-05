@@ -1,1 +1,79 @@
-Scaling Heights: Harnessing the Power of React and Nx for Large-Scale Applications
+<!-- WIP -->
+
+If we have some legacy applications that use different versions than the latest one,
+why do we want to want to include it into our monorepo?
+
+We have several polyrepos and some monorepos.
+We spend a lot of time communicate with each others for
+
+- renaming things to reflect the new business domains
+- restructuring things to make them sharable in new scope
+- determining where to put a piece of code
+- publishing libraries in order
+- running the CI for each library serially
+- am I breaking any after publishing this library
+- planing for migration
+- don't want to create new product inside the legacy monolith repo anymore
+
+Why do we need monorepo management?
+
+- easy to manage (add, delete, refactor, move)
+- avoid maintaining the dependency chain manually
+- unify the release version for all internal tool
+- if we want people do something, make it easy to do first
+
+- shared components depends on each other
+- make it easy to modify and test
+
+- don't leave consumers behind
+- all consumers can get the latest version by monorepo
+- code ownership, the code owner should handle the breaking changes, not all consumers
+
+User stories we care:
+
+- We want to incrementally adapt the monorepo architecture
+- We want to migrate without much effort
+- We want to easy deploy some low-level library for external polyrepos to use
+- We want to see up-to-date project dependencies so we can review our architecture anytime
+- We want to {move, delete, create, refactor, rename} libraries easily
+- We want to make our develop process smooth
+
+Exception:
+
+- Migrating a large legacy codebase
+  - Maybe we should consider some strategy like Strangler Pattern
+- Experimenting new features from latest version or beta version of 3rd party libraries.
+- Mark projects as maintaining mode. So they don't affect our development process.
+
+Tale of Two Repos: https://docs.google.com/presentation/d/e/2PACX-1vTRZUM0ml3ffHrsKnx_LCwoMdphr1eI8kQO6b1NHQxUxLOQqgBRLMRD_iyEDoycJpByXWnFkZrOMqh-/pub?start=false&loop=false&delayms=3000&slide=id.g1362aaca0dd_0_626
+
+- Install
+  - hoist the dependencies
+- Link
+  - workspace
+- Develop
+  - centralized or distributed config for linting / testing / ...
+- Build
+  - how to build the DAG (topological sort)
+- Release
+  - unified or independent
+
+The Age of Monorepos: https://portal.gitnation.org/contents/the-age-of-monorepos
+
+- Monorepos bring clarity
+  - workspace analysis
+  - graph visualization
+    - update-to-date architecture graph
+- Monorepos bring speed
+  - local & remote caching
+  - task orchestration
+  - detecting affected nodes
+  - distributed task execution
+- Monorepos make it easy
+  - code sharing
+  - code collocation
+  - powerful generators
+  - consistent tooling
+  - code constraints
+
+Fast React Monorepos with High Quality DX: https://portal.gitnation.org/contents/fast-react-monorepos-with-high-quality-dx
