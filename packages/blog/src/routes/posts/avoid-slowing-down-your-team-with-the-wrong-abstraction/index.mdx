@@ -1,0 +1,238 @@
+---
+title: Avoid Slowing Down Your Team with the Wrong Abstraction
+excerpt: Avoid the pitfalls of wrong abstractions in your codebase by understanding their costs and consequences. Learn how to create beneficial abstractions and maintain a healthy development process with proper testing and refactoring strategies.
+date: 2021-11-21
+tags: [shared-component, the-wrong-abstraction]
+featured: cover.jpg
+---
+
+import { Image } from '../../../components/image/image.tsx';
+
+# Avoid Slowing Down Your Team with the Wrong Abstraction
+
+Refactoring abstract components and fixing cross-feature and feature-specific bugs should be straightforward. However, as the number of layers and abstractions in our codebase increases, it becomes increasingly challenging. The key is not to avoid abstraction entirely, but to determine whether the abstraction we create is beneficial or detrimental.
+
+Remember, no abstraction is better than the wrong abstraction. It's tempting to use an abstraction that appears promising and logical. Often, we focus so much on avoiding spaghetti code that we end up with lasagna code with so many layers that it becomes impossible to understand. This can lead to significant difficulties down the line.
+
+## Visualize the Cost of Abstraction
+
+Before diving into an example, let's acknowledge that every abstraction has a cost. There is no such thing as a free abstraction. Each time we abstract, we pay a price.
+
+<Image
+  imgSrc="/posts/avoid-slowing-down-your-team-with-the-wrong-abstraction/abstraction-power-tree.png"
+  imgAlt="abstraction power tree"
+/>
+
+(This image is copied from the slides of this [great talk](https://www.youtube.com/watch?v=mVVNJKv9esE&ab_channel=ReactEurope))
+
+Power = The ability to drill down to a specific level of abstraction and reach concrete use cases.
+
+## Understanding the Wrong Abstraction
+
+We'll use a simple case to work through the steps listed in [The Wrong Abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction). The example demonstrates the process of creating an abstraction and highlights how it can lead to issues in the long run.
+
+### 1. Programmer A sees duplication.
+
+There is duplication between our `BookMenu` and `VideoMenu`.
+
+```jsx
+const BookMenu = ({ books }) => {
+  const handleClick = (book) => {
+    // navigate to the page of this book
+  };
+
+  const handleAddToPlaylist = (book) => {
+    // add this book to user's playlist
+  };
+
+  return (
+    <MenuList header="books menu">
+      {books.map((book) => {
+        return (
+          <MenuListRow
+            key={book.title}
+            title={book.title}
+            description={book.description}
+            authors={book.authors}
+            publishAt={book.publishAt}
+            onClick={() => handleClick(book)}
+            onAddToPlaylist={() => handleAddToPlaylist(book)}
+          />
+        );
+      })}
+    </MenuList>
+  );
+};
+```
+
+```jsx
+const VideoMenu = ({ video }) => {
+  const handleClick = video => {
+    // navigate to the page of this video
+  }
+
+  const handleAddToPlaylist = video => {
+    // add this video to user's playlist
+  }
+
+  return (
+    <MenuList header="videos menu">
+      {videos.map(video => {
+        return (
+          <MenuListRow
+            key={video.title}
+            title={video.title}
+            description={video.description}
+            authors={video.authors}
+            publishAt={video.publishAt}
+            onClick={() => handleClick(video)}
+            onAddToPlaylist={() => handleAddToPlaylist(video)}
+          />
+        )
+      })}
+    </BookList>
+  )
+}
+```
+
+### 2. Programmer A extracts duplication and gives it a name.
+
+> This creates a new abstraction. It could be a new method, or perhaps even a new class.
+
+Here, it's a new component.
+
+```jsx
+const SharedMenu = ({ header, items }) => {
+  const handleClick = item => {
+    // navigate to the page of this item
+  }
+
+  const handleAddToPlaylist = item => {
+    // add this item to user's playlist
+  }
+
+  return (
+    <MenuList header={header}>
+      {items.map(item => {
+        return (
+          <MenuListRow
+            key={item.title}
+            title={item.title}
+            description={item.description}
+            authors={item.authors}
+            publishAt={item.publishAt}
+            onClick={() => handleClick(item)}
+            onAddToPlaylist={() => handleAddToPlaylist(item)}
+          />
+        )
+      })}
+    </BookList>
+  )
+}
+```
+
+### 3. Programmer A replaces the duplication with the new abstraction.
+
+Wow, so clean! 🚀
+
+```jsx
+const BookMenu = ({ books }) => {
+  return <SharedMenu header="books menu" items={books} />;
+};
+
+const VideoMenu = ({ videos }) => {
+  return <SharedMenu header="videos menu" items={videos} />;
+};
+```
+
+### 4. Time passes.
+
+<Image
+  imgSrc="/posts/avoid-slowing-down-your-team-with-the-wrong-abstraction/several-months-later.png"
+  imgAlt="several months later"
+/>
+
+### 5. A new requirement appears for which the current abstraction is almost perfect.
+
+Please show a register modal for guests when they are trying to add a video to their playlist.
+
+### 6. Programmer B gets tasked to implement this requirement.
+
+> Programmer B feels honor-bound to retain the existing abstraction, but since it isn't exactly the same for every case, they alter the code to take a parameter, and then add logic to conditionally do the right thing based on the value of that parameter.
+
+```diff
+- const SharedMenu = ({ header, items }) => {
++ const SharedMenu = ({ header, items, isGuest = false }) => {
+    const handleClick = item => {
+      // navigate to the page of this item
+    }
+
+    const handleAddToPlaylist = item => {
++     if (isGuest) {
++       // show register modal
++       return
++     }
+
+      // add this item to user's playlist
+    }
+
+    return (
+      <MenuList header={header}>
+        {items.map(item => {
+          return (
+            <MenuListRow
+              key={item.title}
+              title={item.title}
+              description={item.description}
+              authors={item.authors}
+              publishAt={item.publishAt}
+              onClick={() => handleClick(item)}
+              onAddToPlaylist={() => handleAddToPlaylist(item)}
+            />
+          )
+        })}
+      </BookList>
+    )
+}
+```
+
+```jsx
+const VideoMenu = ({ videos, isGuest }) => {
+  return <SharedMenu header="videos menu" items={videos} isGuest={isGuest} />;
+};
+```
+
+> What was once a universal abstraction now behaves differently for different cases.
+
+### 7. Another new requirement arrives.
+
+> Programmer X.
+> -> Another additional parameter.
+> -> Another new conditional.
+> -> Loop until code becomes incomprehensible.
+
+New requirements such as:
+
+- We have article writers now. Please add articles to our menu but don't let users add them to the playlist.
+- We have live events now. Please add live events to our menu and hide the button for add-to-playlist.
+- ...
+
+### 8. You appear in the story about here, and your life takes a dramatic turn for the worse.
+
+Dare we break the loop?
+
+<Image
+  imgSrc="/posts/avoid-slowing-down-your-team-with-the-wrong-abstraction/loop.webp"
+  imgAlt="loop"
+/>
+
+## Conclusion
+
+Abstraction is an essential part of any codebase. To maintain a healthy development process, we must be vigilant in not only adding abstractions but also removing them when necessary. Focus on writing unit tests or integration tests against the code that affects concrete features. These tests should remain unaffected by your abstractions, allowing you to inline the abstraction back whenever needed without breaking the tests. Ultimately, this approach ensures that refactoring abstract components and addressing both cross-feature and feature-specific bugs are no longer daunting tasks.
+
+## References
+
+- [The Wrong Abstraction - Sandi Metz](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction)
+- [The WET Codebase - Dan Abramov](https://overreacted.io/the-wet-codebase/)
+- [On the Spectrum of Abstraction - Cheng Lou](https://www.youtube.com/watch?v=mVVNJKv9esE&ab_channel=ReactEurope)
+- [Design Systems: Walking the Line Between Flexibility and Consistency - Sid Kshetrapal](https://portal.gitnation.org/contents/walking-the-line-between-flexibility-and-consistency)

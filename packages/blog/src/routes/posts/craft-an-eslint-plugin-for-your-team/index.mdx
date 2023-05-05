@@ -1,0 +1,154 @@
+---
+title: Craft an ESLint Plugin for Your Team
+excerpt: As your team grows, so does your style guide. Ensuring everyone adheres to it, especially newcomers, can be a challenge. That's where ESLint comes in! Learn how to create a custom ESLint plugin to maintain consistency in your codebase.
+date: 2021-08-18
+tags: [ESLint, AST, abstract-syntax-trees]
+featured: cover.jpg
+---
+
+# Craft an ESLint Plugin for Your Team
+
+When your style guide expands or your team decides to make changes, having those rules in your style lint is the way to go. This way, team members can see the recommended approach in their editor when adding or modifying code. The CI will catch code that doesn't fit the guidelines in every PR, saving time on commenting and requesting changes from the PR owner. Newcomers to your team will also feel more confident in their early contributions. Frontend developers typically use ESLint for linting coding styles, as it offers an excellent interface for adding custom rules. In this post, I'll guide you through creating your own ESLint plugin and explain how to test and document it for streamlined communication and consistent code.
+
+## Crafting an ESLint Plugin
+
+To kickstart your plugin creation, use the [Yeoman generator](https://www.npmjs.com/package/generator-eslint), which helps set up the plugin's basic structure.
+
+After creating a plugin, add your first rule with `yo eslint:rule`. A rule consists of three components: source file, test file, and documentation.
+
+### Rule - Source File
+
+Understanding [AST (Abstract Syntax Tree)](https://en.wikipedia.org/wiki/Abstract_syntax_tree) and the [Visitor Pattern](https://en.wikipedia.org/wiki/Visitor_pattern) is essential for developing an ESLint plugin (Babel and Codemods plugins also use these tools).
+
+Consider the `limit-continuous-import-declarations` rule as an example:
+
+```js
+module.exports = {
+  create(context) {
+    // Use context to share variables between callbacks of
+    // each selector while traversing the abstract syntax tree.
+    const limit = 10;
+    let continuousImportDeclarations = 0;
+    let lastEnd = 0;
+
+    return {
+      ImportDeclaration(node) {
+        const [start, end] = node.range;
+        if (start !== lastEnd + 1) {
+          // Reset counter if there's an empty line between
+          // import declarations
+          continuousImportDeclarations = 0;
+        }
+        continuousImportDeclarations += 1;
+        lastEnd = end;
+
+        if (continuousImportDeclarations > limit) {
+          context.report({
+            node: node,
+            message: 'Too many continuous import declarations',
+          });
+        }
+      },
+    };
+  },
+};
+```
+
+Additionally, enhance your rule with a meta object containing properties like `type`, `docs`, `fixable`, `schema`, and more.
+
+Note: Use `Program:exit` when the rule needs to wait until the entire file is parsed.
+
+### Rule - Test File
+
+Don't forget to configure the correct parser for your `ruleTester`. For instance, set the parser to `@babel/eslint-parser` if you want to use ES6+ features.
+
+```js
+import { RuleTester } from 'eslint';
+
+const ruleTester = new RuleTester({
+  parser: require.resolve('@babel/eslint-parser'),
+  parserOptions: {
+    requireConfigFile: false,
+  },
+});
+```
+
+Here's a portion of the unit tests in the `limit-continuous-import-declarations` rule:
+
+```js
+import rule from 'rules/limit-continuous-import-declarations';
+
+const testCase = [
+  "import foo1 from 'foo'",
+  "import foo2 from 'foo'",
+  "import foo3 from 'foo'",
+].join('\n');
+
+ruleTester.run('limit-continuous-import-declarations', rule, {
+  valid: [
+    {
+      code: testCase,
+      options: [{ limit: 5 }],
+    },
+  ],
+  invalid: [
+    {
+      code: testCase,
+      options: [{ limit: 2 }],
+      errors: [
+        {
+          message: 'Too many continuous import declarations',
+        },
+      ],
+    },
+  ],
+});
+```
+
+## Use the ESLint Plugin
+
+To use the plugin, configure your ESLint configuration file as follows:
+
+```js
+module.exports = {
+  // ...
+
+  plugins: ['plugin-name'],
+
+  rules: {
+    'plugin-name/your-rule': [
+      'error',
+      {
+        // Provide options if needed
+      },
+    ],
+  },
+
+  // ...
+};
+```
+
+Alternatively, if the plugin offers configurations like `recommended`, you can use it like this:
+
+```js
+module.exports = {
+  // ...
+
+  extends: ['plugin:plugin-name/recommended'],
+
+  // ...
+};
+```
+
+## Complete Example
+
+You can find the complete source code in this GitHub repository: https://github.com/wtlin1228/eslint-plugin-wtlin.
+
+## Useful Resources
+
+- https://astexplorer.net/
+- https://resources.jointjs.com/demos/rappid/apps/Ast/index.html
+
+## Reference
+
+- https://eslint.org/
