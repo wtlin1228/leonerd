@@ -12,8 +12,7 @@ export default extendConfig(baseConfig, () => {
     },
     plugins: [
       staticAdapter({
-        // TODO: change to my domain name
-        origin: 'https://yoursite.qwik.dev',
+        origin: 'https://leonerd.blog',
       }),
     ],
   };
