@@ -32,7 +32,7 @@ export const Footer = component$(() => {
       </div>
       <div class="divider" />
       <div class="copyright">
-        <p>© 2023 Leonerd.</p>
+        <p>© 2023 LeoNerd.</p>
       </div>
     </footer>
   );

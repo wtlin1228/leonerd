@@ -64,12 +64,12 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: 'Welcome to Leonerd',
+  title: 'Welcome to LeoNerd',
   meta: [
     {
       name: 'description',
       content:
-        "Explore Leonerd's World, a captivating blog where technology, personal growth, and creativity converge.",
+        "Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge.",
     },
   ],
 };

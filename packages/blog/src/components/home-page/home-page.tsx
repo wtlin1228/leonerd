@@ -27,10 +27,13 @@ export const HomePage = component$(
               containerClass += ' post-container--large';
             }
             return (
-              <div class={containerClass}>
+              <div class={containerClass} key={matter.title}>
                 <article class="card">
                   <a class="card-image" href={matter.url}>
-                    <img src="https://placekitten.com/1000/640"></img>
+                    <img
+                      src={matter.featured}
+                      alt={`cover for post - ${matter.title}`}
+                    ></img>
                   </a>
                   <div class="card-content">
                     <h3 class="card-title">
