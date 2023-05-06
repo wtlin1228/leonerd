@@ -3,7 +3,7 @@ title: Deduplicating JS Bundles
 excerpt: Discover how to optimize your website's performance by eliminating redundant code from your JavaScript bundles, boosting loading speed, and enhancing user experience.
 date: 2022-11-27
 tags: [webpack, webpcak-plugin, de-duplicate, yarn, npm]
-featured: /posts/deduplicating-js-bundles/cover.jpg
+featured: /posts/deduplicating-js-bundles/cover.webp
 ---
 
 import { Image } from '../../../components/image/image.tsx';
@@ -64,7 +64,7 @@ Your node_modules folder would look like this:
 To deduplicate, you can start by modifying the lock file.
 
 <Image
-  imgSrc="/posts/deduplicating-js-bundles/dependencies-1.png"
+  imgSrc="/posts/deduplicating-js-bundles/dependencies-1.webp"
   imgAlt="deduplicating package manually"
 />
 
@@ -138,7 +138,7 @@ There are two identical `button@1.4.0` and two identical `icon@1.99.0`. To furth
 In this case, we need the `normalModuleFactory.hooks.beforeResolve` hook. We can replace the `resolveData.request` right before Webpack resolves one module.
 
 <Image
-  imgSrc="/posts/deduplicating-js-bundles/webpack.png"
+  imgSrc="/posts/deduplicating-js-bundles/webpack.webp"
   imgAlt="inside workflow overview of webpack"
   inlineStyle="background-color: white;"
 />
@@ -179,12 +179,12 @@ Setting up the playground from scratch can be tedious. Feel free to use my repos
 Without the DeduplicateWebpackPlugin, Webpack bundles four icons and three buttons by default.
 
 <Image
-  imgSrc="/posts/deduplicating-js-bundles/icon-bundle-duplications.png"
+  imgSrc="/posts/deduplicating-js-bundles/icon-bundle-duplications.webp"
   imgAlt="icon bundle duplications"
 />
 
 <Image
-  imgSrc="/posts/deduplicating-js-bundles/button-bundle-duplications.png"
+  imgSrc="/posts/deduplicating-js-bundles/button-bundle-duplications.webp"
   imgAlt="button bundle duplications"
   inlineStyle="margin-top: 20px;"
 />
@@ -192,12 +192,12 @@ Without the DeduplicateWebpackPlugin, Webpack bundles four icons and three butto
 With the DeduplicateWebpackPlugin, there are only three icons and two buttons in our bundle.
 
 <Image
-  imgSrc="/posts/deduplicating-js-bundles/icon-bundle-deduplications.png"
+  imgSrc="/posts/deduplicating-js-bundles/icon-bundle-deduplications.webp"
   imgAlt="icon bundle de-duplications"
 />
 
 <Image
-  imgSrc="/posts/deduplicating-js-bundles/button-bundle-deduplications.png"
+  imgSrc="/posts/deduplicating-js-bundles/button-bundle-deduplications.webp"
   imgAlt="button bundle de-duplications"
   inlineStyle="margin-top: 20px;"
 />

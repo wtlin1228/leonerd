@@ -44,7 +44,7 @@ export const HomePage = component$(
                     </p>
                     <div class="card-footer">
                       <div class="card-avatar">
-                        <img src="/github-avatar.png"></img>
+                        <img src="/github-avatar.webp" alt="avatar"></img>
                       </div>
                       <div>
                         <p class="card-author">Leo Lin</p>
