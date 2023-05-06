@@ -7,6 +7,13 @@
     "build": {
       "executor": "qwik-nx:build",
       "options": {
+        "runSequence": ["blog:build.client", "blog:build.ssg"],
+        "outputPath": "dist/packages/blog"
+      }
+    },
+    "build.preview": {
+      "executor": "qwik-nx:build",
+      "options": {
         "runSequence": ["blog:build.client", "blog:build.ssr"],
         "outputPath": "dist/packages/blog"
       },
@@ -44,7 +51,7 @@
     "preview": {
       "executor": "@nx/vite:preview-server",
       "options": {
-        "buildTarget": "blog:build",
+        "buildTarget": "blog:build.preview",
         "port": 4300
       }
     },
