@@ -17,35 +17,38 @@ export const RouterHead = component$(() => {
 
       <link rel="canonical" href={url.href} />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="color-scheme" content="dark light" />
+      <link rel="apple-touch-icon" sizes="250x250" href="/icon-logo.webp" />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
       <meta property="og:url" content={url.href} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="LeoNerd" />
       <meta property="og:locale" content="en_US" />
+
       {isPost ? (
         <>
           <meta name="description" content={head.frontmatter.excerpt} />
-          <meta
-            property="og:title"
-            content={`LeoNerd - Posts - ${head.title}`}
-          />
+          <meta property="og:title" content={`LeoNerd - ${head.title}`} />
           <meta property="og:description" content={head.frontmatter.excerpt} />
-          <meta property="og:image" content={head.frontmatter.featured} />
+          <meta
+            property="og:image"
+            content={url.origin + head.frontmatter.featured}
+          />
           <meta
             property="og:image:alt"
             content={`Image of LeoNerd's Post - ${head.title}`}
           />
-          <meta property="og:image:width" content="500" />
-          <meta property="og:image:height" content="300" />
+          <meta property="og:image:width" content="1000" />
+          <meta property="og:image:height" content="600" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:site" content="@WeiTangLin1" />
-          <meta
-            name="twitter:title"
-            content={`LeoNerd - Posts - ${head.title}`}
-          />
+          <meta name="twitter:title" content={`LeoNerd - ${head.title}`} />
           <meta name="twitter:description" content={head.frontmatter.excerpt} />
-          <meta name="twitter:image" content={head.frontmatter.featured} />
+          <meta
+            name="twitter:image"
+            content={url.origin + head.frontmatter.featured}
+          />
           <meta
             name="twitter:image:alt"
             content={`Image of LeoNerd's Post - ${head.title}`}
@@ -58,7 +61,7 @@ export const RouterHead = component$(() => {
             property="og:description"
             content="Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge."
           />
-          <meta property="og:image" content="/icon-logo.webp" />
+          <meta property="og:image" content={url.origin + '/icon-logo.webp'} />
           <meta property="og:image:alt" content="Image of LeoNerd" />
           <meta property="og:image:width" content="250" />
           <meta property="og:image:height" content="250" />
@@ -69,7 +72,7 @@ export const RouterHead = component$(() => {
             name="twitter:description"
             content="Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge."
           />
-          <meta name="twitter:image" content="/icon-logo.webp" />
+          <meta name="twitter:image" content={url.origin + '/icon-logo.webp'} />
           <meta name="twitter:image:alt" content="Image of LeoNerd" />
         </>
       )}
