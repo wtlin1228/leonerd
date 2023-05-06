@@ -17,7 +17,6 @@ export const RouterHead = component$(() => {
 
       <link rel="canonical" href={url.href} />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      {/* TODO: Add favicon */}
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
       <meta property="og:url" content={url.href} />
@@ -37,8 +36,8 @@ export const RouterHead = component$(() => {
             property="og:image:alt"
             content={`Image of LeoNerd's Post - ${head.title}`}
           />
-          <meta property="og:image:width" content="1000" />
-          <meta property="og:image:height" content="600" />
+          <meta property="og:image:width" content="500" />
+          <meta property="og:image:height" content="300" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:site" content="@WeiTangLin1" />
           <meta
@@ -59,10 +58,10 @@ export const RouterHead = component$(() => {
             property="og:description"
             content="Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge."
           />
-          <meta property="og:image" content="/github-avatar.webp" />
+          <meta property="og:image" content="/icon-logo.webp" />
           <meta property="og:image:alt" content="Image of LeoNerd" />
-          <meta property="og:image:width" content="460" />
-          <meta property="og:image:height" content="460" />
+          <meta property="og:image:width" content="250" />
+          <meta property="og:image:height" content="250" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:site" content="@WeiTangLin1" />
           <meta name="twitter:title" content={head.title} />
@@ -70,7 +69,7 @@ export const RouterHead = component$(() => {
             name="twitter:description"
             content="Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge."
           />
-          <meta name="twitter:image" content="/github-avatar.webp" />
+          <meta name="twitter:image" content="/icon-logo.webp" />
           <meta name="twitter:image:alt" content="Image of LeoNerd" />
         </>
       )}
