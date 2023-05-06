@@ -58,9 +58,9 @@
 
   --card-bg-color: #1d1d1d;
   --card-title-color: #e3e2e9;
-  --card-description-color: rgb(162, 161, 170);
+  --card-description-color: rgb(198 198 198);
   --card-author-color: #e3e2e9;
-  --card-date-color: #79787c;
+  --card-date-color: #c5c4c8;
 }
 
 :root[data-theme='dark'] {
@@ -79,7 +79,7 @@
   --card-title-color: #0e201a;
   --card-description-color: rgb(49, 51, 50);
   --card-author-color: #0e201a;
-  --card-date-color: rgb(108, 113, 111);
+  --card-date-color: rgb(44 46 45);
 }
 
 html {
