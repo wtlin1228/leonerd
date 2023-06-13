@@ -8,7 +8,8 @@
       "executor": "qwik-nx:build",
       "options": {
         "runSequence": ["blog:build.client", "blog:build.ssg"],
-        "outputPath": "dist/packages/blog"
+        "outputPath": "dist/packages/blog",
+        "skipTypeCheck": false
       }
     },
     "build.preview": {
