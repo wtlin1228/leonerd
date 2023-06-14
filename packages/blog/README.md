@@ -64,8 +64,7 @@ The production build will generate client and server modules by running both cli
 npx nx run blog:build
 ```
 
-## Static Site Generator (Node.js)
+## Deploy Static Site to Netlify
 
-```
-npx nx run blog:build.ssr
-```
+1. `npx nx run blog:build`
+1. manually upload the `dist/packages/blog/client` folder to Netlify 😂
