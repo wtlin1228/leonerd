@@ -1,0 +1,267 @@
+---
+title: Improve Testing Experience with a11y and i18n
+excerpt: Discover how you can skip the manual process of labeling test ids by harnessing the power of a11y and i18n. Learn how this approach can transform the way we build web applications, promoting a culture of accessibility along the way.
+date: 2023-06-14
+tags: [testing-experience, a11y, cypress]
+featured: /posts/improve-testing-experience-with-a11y-and-i18n/cover.webp
+---
+
+# Improve Testing Experience with a11y and i18n
+
+The process of labeling test ids in the appropriate locations for our web applications has been consuming a significant amount of engineering hours for our QA teams. Their responsibility lies in writing end-to-end tests, which necessitates the use of test ids. While it is feasible to assign test ids during the development of new features, we can view this challenge as an opportunity to enhance the accessibility of our applications and educate everyone involved about the benefits it offers.
+
+To date, the most frequent areas where test ids are required include forms, graphical elements, description lists, and tables. In this article, I will demonstrate how we can minimize the widespread use of test ids by leveraging accessibility principles (a11y). Additionally, we will explore the potential of integrating internationalization (i18n) and a customized Babel plugin, allowing us to extend the benefits even further.
+
+## Accessible Form
+
+To establish a relationship between the `<label>` element and the `<input>` element, utilize the `for` attribute. Additionally, use the `aria-describedby` attribute to connect the `<input>` element with descriptive elements such as helper and error messages.
+
+{/* prettier-ignore-start */}
+
+```tsx
+<form>
+  <div>
+    <label htmlFor="title">
+      i18n.form.field.title
+    </label>
+    <input
+      id="title"
+      name="title"
+      aria-describedby="title-helper-message title-error-message"
+      type="text"
+    />
+  </div>
+  <div id="title-helper-message">
+    i18n.form.field.title.helper_message
+  </div>
+  <div id="title-error-message">
+    i18n.form.field.title.error_message
+  </div>
+</form>
+```
+
+{/* prettier-ignore-end */}
+
+To test this form using Cypress, consider the following code:
+
+```ts
+// get input by label
+cy.contains('i18n.form.field.title').then(($label) => {
+  const forInput = $label.attr('for');
+  cy.get(`[name="${forInput}"]`).type('test');
+});
+
+// get helper text by input
+// helper text is not visible by default
+cy.get('[name="title"]').then(($input) => {
+  const id = $input.attr('aria-describedby').split(' ')[0];
+  cy.get(`#${id}`).contains('i18n.form.field.title.helper_message');
+});
+
+// get error message by input
+// error message is not visible by default
+cy.get('[name="title"]').then(($input) => {
+  const id = $input.attr('aria-describedby').split(' ')[1];
+  cy.get(`#${id}`).contains('i18n.form.field.title.error_message');
+});
+```
+
+## Accessible Graphical Element
+
+When an interactive element lacks an accessible name, employ the `aria-label` attribute.
+
+```tsx
+<button aria-label="Hide" onClick={handleClick}>
+  🫣
+</button>
+```
+
+To test this graphical element using Cypress, use the following code:
+
+```ts
+// get visual indication by aria-label
+cy.get('[aria-label="Hide"]').click();
+```
+
+## Accessible Description List
+
+To display a list of key-value pairs, utilize the `<dl>`, `<dd>`, and `<dt>` elements.
+
+```tsx
+<dl>
+  <dt>i18n.cart.summary.price</dt>
+  <dd>$200</dd>
+</dl>
+```
+
+To test this description list using Cypress, consider the following code:
+
+```ts
+// get description by term
+cy.contains('i18n.cart.summary.price')
+  .closest('dl')
+  .find('dd')
+  .contains('$200');
+```
+
+It is also acceptable to wrap the elements within a `<div>` element for styling purposes. This does not impact the accessibility tree or the Cypress test.
+
+```tsx
+<dl>
+  <div>
+    <div>
+      <dt>i18n.cart.summary.price</dt>
+    </div>
+    <dd>$200</dd>
+  </div>
+</dl>
+```
+
+## Accessible Table
+
+To provide a clear and concise purpose for a table, include a `<caption>` element that describes it.
+
+```tsx
+<table>
+  <caption>i18n.table.caption</caption>
+  <thead>
+    <tr>
+      <th scope="col">i18n.table.col.header.order_id</th>
+      <th scope="col">i18n.table.col.header.order_by</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>9mq1123p</td>
+      <td>Leo</td>
+    </tr>
+    <tr>
+      <td>mkq12ie4</td>
+      <td>Leo</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+To test this table using Cypress, use the following code:
+
+```ts
+// get table by caption
+cy.contains('i18n.table.caption').closest('table');
+
+// get table's header row
+cy.contains('i18n.table.caption')
+  .closest('table')
+  .find('thead tr') // can also query by "scope=col"
+  .within(() => {
+    cy.get('th').eq(0).contains('i18n.table.col.header.order_id');
+    cy.get('th').eq(1).contains('i18n.table.col.header.order_by');
+  });
+
+// get table's body rows
+cy.contains('i18n.table.caption')
+  .closest('table')
+  .find('tbody tr')
+  .first()
+  .within(() => {
+    cy.get('td').eq(0).contains('9mq1123p');
+    cy.get('td').eq(1).contains('Leo');
+  });
+cy.contains('i18n.table.caption')
+  .closest('table')
+  .find('tbody tr')
+  .eq(1)
+  .within(() => {
+    cy.get('td').eq(0).contains('mkq12ie4');
+    cy.get('td').eq(1).contains('Leo');
+  });
+```
+
+In cases where the `<caption>` should not be displayed but needs to be maintained in the HTML structure for accessibility, you can utilize the following CSS:
+
+```css
+caption {
+  position: absolute;
+  border: 0;
+  padding: 0;
+  height: 1px;
+  width: 1px;
+  margin: -1px;
+  overflow: hidden;
+}
+```
+
+## i18n Key as `data-test-id`
+
+Supporting internationalization (i18n) within our team is crucial. However, it can complicate our workflow due to the increased language support and the maintenance challenges it poses for testing code. One approach to address this issue is to utilize a customized Babel plugin (or SWC plugin). By doing so, we can leverage the i18n keys as data-test-id, which not only facilitates debugging but also allows us to pinpoint the exact location of any UI issues through web developer tools.
+
+{/* prettier-ignore-start */}
+
+```tsx
+<form>
+  <div>
+    <label htmlFor="title">
+      {t("i18n.form.field.title")}
+    </label>
+    <input
+      id="title"
+      name="title"
+      aria-describedby="title-helper-message title-error-message"
+      type="text"
+    />
+  </div>
+  <div id="title-helper-message">
+    {t("i18n.form.field.title.helper_message")}
+  </div>
+  <div id="title-error-message">
+    {t("i18n.form.field.title.error_message")}
+  </div>
+</form>
+```
+
+{/* prettier-ignore-end */}
+
+The JSX code above will be transformed into the following:
+
+{/* prettier-ignore-start */}
+
+```tsx
+<form>
+  <div>
+    <label
+      htmlFor="title"
+      data-test-id="i18n.form.field.title"
+    >
+      {t("i18n.form.field.title")}
+    </label>
+    <input
+      id="title"
+      name="title"
+      aria-describedby="title-helper-message title-error-message"
+      type="text"
+    />
+  </div>
+  <div
+    id="title-helper-message"
+    data-test-id="i18n.form.field.title.helper_message"
+  >
+    {t("i18n.form.field.title.helper_message")}
+  </div>
+  <div
+    id="title-error-message"
+    data-test-id="i18n.form.field.title.error_message"
+  >
+    {t("i18n.form.field.title.error_message")}
+  </div>
+</form>
+```
+
+{/* prettier-ignore-end */}
+
+By transforming the i18n keys into `data-test-id` attributes, we enhance the maintainability of our testing code while preserving the ability to quickly identify and debug issues within our UI using the associated i18n keys.
+
+## Conclusion
+
+Testing plays a crucial role in delivering a high-quality product, enabling engineers to develop new features with confidence and minimize the risk of introducing defects. Throughout this blog post, we have explored a new approach that leverages two key aspects: accessibility (a11y) and internationalization (i18n). By incorporating these principles, we have successfully reduced the communication overhead between our QA teams and frontend teams, while also fostering a greater emphasis on web accessibility among our frontend engineers. Although there are still some exceptional cases that require manual handling, they are rare occurrences. As a result of implementing this new approach, we are thrilled to announce that we have achieved a remarkable 90% reduction in engineering hours dedicated to manually labeling the test ids.
+
+By embracing a holistic testing strategy that integrates a11y and i18n, we are well-equipped to deliver robust and inclusive web applications while empowering our engineering teams to focus on innovation and feature development.
