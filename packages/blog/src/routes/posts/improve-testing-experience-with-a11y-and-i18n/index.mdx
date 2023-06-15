@@ -2,7 +2,7 @@
 title: Improve Testing Experience with a11y and i18n
 excerpt: Discover how you can skip the manual process of labeling test ids by harnessing the power of a11y and i18n. Learn how this approach can transform the way we build web applications, promoting a culture of accessibility along the way.
 date: 2023-06-14
-tags: [testing-experience, a11y, cypress]
+tags: [testing-experience, a11y, i18n, cypress]
 featured: /posts/improve-testing-experience-with-a11y-and-i18n/cover.webp
 ---
 
@@ -197,7 +197,7 @@ Supporting internationalization (i18n) within our team is crucial. However, it c
 
 {/* prettier-ignore-start */}
 
-```tsx
+```tsx {4,14,17}
 <form>
   <div>
     <label htmlFor="title">
@@ -225,7 +225,7 @@ The JSX code above will be transformed into the following:
 
 {/* prettier-ignore-start */}
 
-```tsx
+```tsx {7,20,26} /data-test-id/#a
 <form>
   <div>
     <label
