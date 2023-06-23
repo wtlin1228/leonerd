@@ -17,7 +17,7 @@
   @apply lg:pt-16 lg:mx-[4rem] lg:px-0;
 
   /* xlarge */
-  @apply xl:pr-16 xl:mx-[6rem];
+  @apply xl:mx-[6rem];
 }
 
 .post article a {
