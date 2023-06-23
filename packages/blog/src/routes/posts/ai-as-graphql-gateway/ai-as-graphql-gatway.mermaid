@@ -1,0 +1,12 @@
+sequenceDiagram
+  Client->>+Server: Is pikachu taller<br/>than R2-D2?
+  Server->>+AI: Please give me a query plan and estimate the<br/>cost based on my schemas and question.
+  AI-->>-Server: Here is your query plan (estimated cost 0.0001$)
+  Server->>Server: Execute the query plan if we can afford the cost.
+  Server->>+Pokemon Service: query GetPikachu { pokemon(name: "pikachu") { height } }
+  Server->>+StarWars Service: query GetR2D2 { person(name: "R2-D2") { height } }
+  Pokemon Service-->>-Server: 40.6cm
+  StarWars Service-->>-Server: 110cm
+  Server->>+AI: Give me the answer based on the<br />question (Is pikachu taller than R2-D2?)<br/>and the responses (40.6cm and 110cm).
+  AI-->>-Server: No, pikachu (40.6cm) is<br/>shorter than R2-D2 (110cm).
+  Server-->>-Client: No, pikachu (40.6cm) is<br/>shorter than R2-D2 (110cm).

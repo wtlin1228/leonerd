@@ -1,0 +1,162 @@
+---
+title: AI as GraphQL Gateway
+excerpt: The Apollo federation architecture had been adopted by thousands of companies. Let's learn it with an interesting example "What if Pokemons attend StarWars?"
+date: 2023-07-01
+tags: [graphql, federation, architecture, api]
+featured: /posts/ai-as-graphql-gateway/cover.webp
+---
+
+import { ImageOnTheme } from '../../../components/image/index.ts';
+import { Row } from '../../../components/row/row.tsx';
+
+# AI as GraphQL Gateway
+
+Imagine you're diving into the world of an incredible app called "What if Pokemons attend StarWars?" Here, users can let their imaginations run wild, doing all sorts of crazy things like packing as many Snorlaxes as possible onto a starship or searching for the perfect planet to train their Squirtle army.
+
+To make this app truly awesome, we've decided to use GraphQL as our API layer. The beauty of GraphQL is that it lets us grab exactly the data we need with just one query, saving us from writing extra code. And Graphs are powerful tools for modeling many real-world phenomena because they resemble our natural mental models and verbal descriptions of the underlying process. Lucky for us, we found some amazing third-party GraphQL APIs for both Pokemon and StarWars. The only thing left to do is figure out how to combine these APIs and give our app all the data it craves.
+
+But here's the thing: we want our app to grow fast without breaking the GraphQL's core principle. That's why we came up with a brilliant idea - to use AI as our GraphQL gateway. So, picture this: a user fires up our app and asks, "Hey, is Pikachu taller than R2-D2?" Let me walk you through the flow of how our app handles that query.
+
+<br />
+
+<ImageOnTheme
+  darkImgSrc="/posts/ai-as-graphql-gateway/ai-as-graphql-gateway-dark.svg"
+  lightImgSrc="/posts/ai-as-graphql-gateway/ai-as-graphql-gateway-light.svg"
+  imgAlt="AI as GraphQL gateway"
+/>
+
+<br />
+
+1. The client initiates the query by sending a message to the server, asking, "Is Pikachu taller than R2-D2?"
+1. The server, upon receiving the query, forwards it to the AI component, requesting a query plan and cost estimate based on the schemas and question provided.
+1. The AI generates a query plan and estimates the cost, sending the plan back to the server. In this case, the estimated cost is $0.0001.
+1. The server evaluates the query plan and checks if the cost is affordable. If it is, the server proceeds to execute the query plan.
+1. The server sends separate queries to both the Pokemon Service and the StarWars Service to retrieve the height of Pikachu and R2-D2, respectively.
+1. The Pokemon Service responds to the server with the height of Pikachu, which is 40.6cm.
+1. Similarly, the StarWars Service responds to the server with the height of R2-D2, which is 110cm.
+1. The server then consults the AI, providing the question ("Is Pikachu taller than R2-D2?") and the height responses (40.6cm and 110cm).
+1. The AI processes the information and sends its conclusion back to the server, stating that Pikachu (40.6cm) is, in fact, shorter than R2-D2 (110cm).
+1. Finally, the server relays the answer back to the client, confirming that Pikachu (40.6cm) is indeed shorter than R2-D2 (110cm).
+
+Our app tackles this question effortlessly thanks to our backend system's capabilities in schema composition, query planning (e.g., GetPikachu and GetR2D2), and query execution. Interestingly, our architecture share some similarities with the Supergraph introduced by Apollo. It enables us to seamlessly combine the schemas of the Pokemon Service and StarWars Service, optimizing data retrieval and delivering comprehensive responses to enhance the user (developer) experience.
+
+## In Reality
+
+Supergraph has revolutionized the way we approach GraphQL, and numerous companies have already embraced this architecture. It introduces a unified composition layer built in modules that continually evolve over time. In our case, the Server component, along with the AI component, forms a unified composition layer built in the Pokemon and StarWars modules, adapting to changing needs.
+
+There are three essential architectural components: subgraph, schema registry, and GraphQL gateway. Each subgraph represents an independent GraphQL service, just like our Pokemon and StarWars Services. The schema registry ensures schema validation and composition. It composes together the unified schema and provides it to the gateway. Lastly, the GraphQL gateway serves as the primary interface for handling GraphQL queries from consumers. It takes a client's query, deconstructs it into smaller sub-queries (query plan), and executes this plan by seamlessly redirecting requests to the relevant downstream subgraphs.
+
+### Entity
+
+Once our graph is federated, we can define entities that resolve their fields across multiple subgraphs. Each subgraph contributes different fields to the entity and handles the resolution of the fields it provides.
+
+For instance, let's consider the Berry entity, which has fields defined and resolved across the Pokemon and StarWars subgraphs:
+
+<Row>
+  <div style="width:100%">
+
+    ```graphql title="Pokemon subgraph"
+    type Berry @key(fields: "id") {
+      id: ID!
+      name: String!
+      effect: String!
+    }
+    ```
+
+  </div>
+  <div style="width:100%">
+
+    ```graphql title="StarWars subgraph"
+    type Berry @key(fields: "id") {
+      id: ID!
+      growBy: [Species]!
+      growOn: [Planet]!
+    }
+    ```
+
+  </div>
+</Row>
+
+Entities are a fundamental building block of Apollo Federation that enable subgraphs to adhere to the [separation of concerns principle](https://www.apollographql.com/docs/federation/#separation-of-concerns).
+
+### Next Step - Supergraph Linking [Not in the Spec yet]
+
+Supergraph let us link across types published by different companies. Give us the ability to refer to external type, in this case, the `PokemonCenter` type.
+
+<Row>
+  <div style="width:100%">
+
+    ```graphql {1} title="pokemon.graphql"
+    @link(to: "pokemon_center", as: "pc")
+    type Berry @key(fields: "id") {
+      id: ID!
+      name: String!
+      effect: String!
+      canBuyAt: [pc_PokemonCenter]!
+    }
+    ```
+
+  </div>
+  <div style="width:100%">
+
+    ```graphql title="pokemon_center/schema.graphql"
+    type PokemonCenter {
+      id: ID!
+      name: String!
+    }
+    ```
+
+  </div>
+</Row>
+
+## Tips for Federated GraphQL in Enterprise
+
+1. Use federation. Not too much. Mostly along team boundaries.
+1. One Schema, One Graph. Make data availability and sources clear.
+1. Focus on making the schema intuitive and usable by everyone.
+1. Think of subgraphs as the subdomains in your supergraph.
+1. Adopt an entity-centric mindset, as features often span multiple types across different subgraphs.
+1. Follow a schema-first approach, facilitating tooling integration and consumption. Backward-incompatible changes are more obvious with schema diffs. Backward compatibility is even more critical when working in a Federated GraphQL architecture.
+1. Utilize schema linting to ensure schema quality and consistency.
+1. Propose and document schema updates for visibility, feedback, and validation by all stakeholders.
+1. Establish a schema working group to collaborate and grow GraphQL expertise.
+1. Use a subgraph-focused workflow. If we're part of the Pokemon team, we shouldn't need to spin up an instance of StarWars subgraph to develop features.
+1. Isolate the client development. If we're part of the frontend team, we shouldn't need to spin up all the subgraphs locally to develop features.
+1. Isolate the federation environments to preview subgraph changes while keeping other services in a default state.
+1. Add a caching layer to avoid making duplicate network requests for the same or similar data. GraphQL reduces client side over fetching, not server side.
+1. Chain the type systems to gain type safety from the database layer all the way to the client.
+1. Utilize entity relationships in GraphQL for data aggregation and updating search indexes.
+1. Don't version the schema; instead, use `@deprecate`. Versioned fields are fine and we can add a lot of fields.
+1. Mark slow parts of the query with `@defer`, preventing a single slow field from delaying the entire page's loading and displaying loading indicators everywhere.
+1. Employ observability tools to track the health and performance of our graph. These tools help surface patterns in how our graph gets used, which helps us identify ways to continue improving our graph.
+
+## In the Future
+
+Envision a future where the Graph expands exponentially, empowering the AI as the GraphQL gateway to provide answers to nearly all our queries. This advanced AI system handles everything we need to do ourselves now, including generating query plans, managing AuthN and AuthZ, estimating query costs, and optimizing performance through techniques like batching and caching. Just imagine the possibilities!
+
+As the Graph evolves and becomes more comprehensive, it raises the question: What should we call this extraordinary entity? Could it be referred to as the "One True Graph" or perhaps the "Great Graph" (GG 😳)? The potential is immense, and the future of this unified and intelligent Graph holds endless possibilities.
+
+## Reference
+
+- [Apollo Federation subgraph specification](https://www.apollographql.com/docs/federation/subgraph-spec/)
+- [How Netflix Scales Its API with GraphQL Federation](https://www.infoq.com/presentations/netflix-api-graphql-federation/)
+- [Netflix Tech Blog - Our learnings from adopting GraphQL](https://netflixtechblog.com/our-learnings-from-adopting-graphql-f099de39ae5f)
+- [Netflix Tech Blog - GraphQL Search Indexing](https://netflixtechblog.com/graphql-search-indexing-334c92e0d8d5)
+- [Netflix Tech Blog - How Netflix Scales its API with GraphQL Federation (Part 1)](https://netflixtechblog.com/how-netflix-scales-its-api-with-graphql-federation-part-1-ae3557c187e2)
+- [Netflix Tech Blog - How Netflix Scales its API with GraphQL Federation (Part 2)](https://netflixtechblog.com/how-netflix-scales-its-api-with-graphql-federation-part-2-bbe71aaec44a)
+- [Netflix Tech Blog - Open Sourcing the Netflix Domain Graph Service Framework: GraphQL for Spring Boot](https://netflixtechblog.com/open-sourcing-the-netflix-domain-graph-service-framework-graphql-for-spring-boot-92b9dcecda18)
+- [Netflix Tech Blog - Beyond REST](https://netflixtechblog.com/beyond-rest-1b76f7c20ef6)
+- [Netflix Tech Blog - How Netflix Content Engineering makes a federated graph searchable](https://netflixtechblog.com/how-netflix-content-engineering-makes-a-federated-graph-searchable-5c0c1c7d7eaf)
+- [Netflix Tech Blog - How Netflix Content Engineering makes a federated graph searchable (Part 2)](https://netflixtechblog.com/how-netflix-content-engineering-makes-a-federated-graph-searchable-part-2-49348511c06c)
+- [Netflix Tech Blog - Migrating Netflix to GraphQL Safely](https://netflixtechblog.com/migrating-netflix-to-graphql-safely-8e1e4d4f1e72)
+- [GraphQL Summit 2022 - Opening Keynote with Matt DeBergalis, CTO & Cofounder](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/opening-keynote-with-matt-debergalis-cto-cofounder/)
+- [GraphQL Summit 2022 - The Future of Supergraph](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/the-future-of-supergraph/)
+- [GraphQL Summit 2022 - Building Great GraphQL Developer Experiences at Scale](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/building-great-graphql-developer-experiences-at-scale/)
+- [GraphQL Summit 2022 - Netflix’s Supergraph Saga Continues: Collaboration at Scale](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/netflixs-supergraph-saga-continues-collaboration-at-scale/)
+- [GraphQL Summit 2022 - Stranger Graphs – Scaling Netflix Financials with Federation & GraphQL](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/stranger-graphs-scaling-netflix-financials-with-federation-graphql/)
+- [GraphQL Summit 2022 - State of the Federation Subgraph Ecosystem](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/state-of-the-federation-subgraph-ecosystem/)
+- [GraphQL Summit 2022 - Apollo Router: The Next-Generation Supergraph Runtime](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/apollo-router-the-next-generation-supergraph-runtime/)
+- [GraphQL Summit 2022 - GraphQL is Not a Trap](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/graphql-is-not-a-trap/)
+- [GraphQL Summit 2022 - Navigating the Normalized Cache](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/navigating-the-normalized-cache/)
+- [GraphQL Summit 2022 - Isolated Client Development](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/isolated-client-development/)
+- [GraphQL Summit 2022 - Building Federated GraphQL APIs in Python](https://www.apollographql.com/events/virtual-event/graphql-summit-october-2022/thank-you/building-federated-graphql-apis-in-python/)
