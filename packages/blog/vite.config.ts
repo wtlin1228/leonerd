@@ -1,7 +1,9 @@
-import { qwikVite } from '@builder.io/qwik/optimizer';
-import { qwikCity } from '@builder.io/qwik-city/vite';
+import { join } from 'path';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { qwikVite } from '@builder.io/qwik/optimizer';
+import { qwikCity } from '@builder.io/qwik-city/vite';
+import { partytownVite } from '@builder.io/partytown/utils';
 import { qwikNxVite } from 'qwik-nx/plugins';
 import rehypePrettyCode from 'rehype-pretty-code';
 
@@ -68,6 +70,9 @@ export default defineConfig({
       ssr: {
         outDir: '../../dist/packages/blog/server',
       },
+    }),
+    partytownVite({
+      dest: join(__dirname, '../../dist/packages/blog/client', '~partytown'),
     }),
     tsconfigPaths({ root: '../../' }),
   ],

@@ -5,6 +5,7 @@
   "scripts": {},
   "private": true,
   "devDependencies": {
+    "@builder.io/partytown": "0.8.0",
     "@builder.io/qwik": "1.1.5",
     "@builder.io/qwik-city": "1.1.5",
     "@nx/eslint-plugin": "16.3.2",
