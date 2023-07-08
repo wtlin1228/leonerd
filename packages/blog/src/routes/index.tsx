@@ -23,7 +23,10 @@ export const usePostMattersLoader = routeLoader$(async () => {
         .filter((directory) => directory.isDirectory())
         .map((directory) =>
           read(`${POST_PATH_PREFIX}/${directory.name}/index.mdx`).then(
-            (vFile) => matter(vFile, { strip: true })
+            (vFile) => {
+              matter(vFile, { strip: true });
+              return vFile;
+            }
           )
         )
     );
