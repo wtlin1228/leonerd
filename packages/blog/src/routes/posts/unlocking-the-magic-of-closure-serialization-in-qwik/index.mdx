@@ -1,0 +1,210 @@
+---
+title: Unlocking the Magic of Closure Serialization in Qwik
+excerpt: The way Qwik serializes and deserializes closures truly feels like magic. Let's dig deep into it and learn the magic so we can enchant the closures as well.
+date: 2023-07-09
+tags: [qwik, resumability]
+featured: /posts/unlocking-the-magic-of-closure-serialization-in-qwik/cover.webp
+---
+
+import { ImageOnTheme } from '../../../components/image/index.ts';
+
+# Unlocking the Magic of Closure Serialization in Qwik
+
+Please skip this blog post if you're already a closure wizard who can read the magic HTML below.
+
+```html
+<html q:container="paused" q:base="build">
+  <body>
+    <p>Hello Qwik</p>
+    <p><!--t=8-->0<!----></p>
+    <button
+      on:click="/src/routes_component_div_button_onclick_gurwhjlhap8.js#routes_component_div_button_onClick_GURwHjlHAp8[0]"
+      q:id="9"
+    >
+      increment
+    </button>
+  </body>
+  <script type="qwik/json">
+    {
+      "refs": {
+        "9": "0"
+      },
+      "ctx": {},
+      "objs": ["\u00121", 0, "\u00110 @0", "#8"],
+      "subs": [["3 #8 2 #8"]]
+    }
+  </script>
+  <script q:func="qwik/json">
+    document.currentScript.qFuncs = [(p0) => p0.value * 10];
+  </script>
+</html>
+```
+
+Introducing [Qwik](https://qwik.builder.io/), the innovative framework that brings resumability to the forefront of web development. Qwik, which reached version 1.0 in May 2023, is designed for the edge and offers a familiar environment for React developers. By eliminating eager JavaScript execution and hydration, Qwik revolutionizes the way we build web applications.
+
+Numerous articles have already been written about the groundbreaking concepts behind Qwik. One particularly insightful [blog series](https://dev.to/builderio/a-first-look-at-qwik-the-html-first-framework-af) by Miško Hevery, the creator of Qwik, comes highly recommended for those seeking a comprehensive understanding of its capabilities.
+
+At its core, Qwik aims to achieve lightning-fast time-to-interactive, even on the slowest mobile devices. What sets it apart from other replayable frameworks is its ability to address the major pain point of complex bootstrap processes. Unlike traditional frameworks, Qwik minimizes the amount of code that needs to be downloaded and executed before the page becomes interactive, leading to a seamless and efficient user experience.
+
+## Enabling Resumability with `useLexicalScope`
+
+One of the key strategies employed by Qwik to achieve resumability is the serialization of event listeners and their closures. By leveraging the power of `useLexicalScope`, Qwik introduces a novel approach that delays listener creation until after user interaction, resulting in HTML serializable listeners that do not close over code.
+
+As Tandy from "Last Man on Earth" humorously puts it, if you've ever struggled with closures and the lingering sense of "shoulda woulda coulda," Qwik's resumability concept will make you feel great. It fundamentally transforms the way frameworks handle state computation, template feeding, and listener installation.
+
+Unlike traditional frameworks that require the entire code to be downloaded before computing state and feeding it into the template, Qwik takes a different approach. It defers the creation of listeners using `useLexicalScope`, ensuring that listeners remain serializable in HTML and do not close over code until they are triggered by user interactions.
+
+Before we delve into the code, let's take a moment to examine the component tree:
+
+<ImageOnTheme
+  darkImgSrc="/posts/unlocking-the-magic-of-closure-serialization-in-qwik/demo-component-tree-dark.svg"
+  lightImgSrc="/posts/unlocking-the-magic-of-closure-serialization-in-qwik/demo-component-tree-light.svg"
+  imgAlt="component tree"
+/>
+
+In this component tree, we have two event listeners attached to the increment and decrement buttons. These listeners span across the props of Actions. If you're interested in learning more about how Qwik breaks chunks and renders HTML, you can refer to the [QRL documentation](https://qwik.builder.io/docs/advanced/qrl/).
+
+When we click the decrement button, Qwik fetches and executes the listener's code. This is where the magic of `useLexicalScope` comes into play. Take a look at the following code snippet from the `Actions_component_minus_q0etff0m1ke.js` file:
+
+```js title="/build/actions_component_minus_q0etff0m1ke.js" {2}
+export const Actions_component_minus_q0etFf0m1KE = () => {
+  const [props] = useLexicalScope();
+  return props.count.value--;
+};
+```
+
+### Exploring `useLexicalScope`
+
+The useLexicalScope function plays a crucial role in the resumability mechanism of Qwik. By serializing essential pause state elements such as references, contexts, objects, subscriptions, and transform functions into the HTML, `useLexicalScope` can effectively lookup and deserialize this state to facilitate resumption. Let's explore the key steps involved in the process:
+
+#### 1. `getInvokeContext`
+
+Firstly, `getInvokeContext` is responsible for creating an `InvokeContext` from the tuple [invoked element, event, url] set by the [Qwikloader](https://qwik.builder.io/docs/advanced/qwikloader/). This context serves as a crucial reference point for subsequent operations.
+
+#### 2. `parseQrl`
+
+The parseQrl function decodes the previously created `InvokeContext` to extract the chunk, symbol, and capture, ultimately generating an internal QRL representation.
+
+#### 3. `resumeIfNeeded`
+
+If the container is in a paused state, Qwik initiates the resume process. This involves several essential steps:
+
+1. Getting the pause state and transform functions.
+1. Creating a `ContainerState` to track the container's current state.
+1. Collecting all elements and virtual elements.
+1. Constructing a `Parser` to facilitate object deserialization.
+1. Creating an `getObject` function for mapping object ID to
+
+   - an element, if object id starts with `#`
+   - a transform function, if object id starts with `@`
+   - a text node, if object id starts with `*`
+   - a proxy, if object id ends with `!`
+   - a resolved promise, if object id ends with `~`
+   - a rejected promise, if object id ends with `_`
+   - a deserialized object
+
+The collected elements, including virtual elements, are illustrated below:
+
+<ImageOnTheme
+  darkImgSrc="/posts/unlocking-the-magic-of-closure-serialization-in-qwik/collected-elements-dark.svg"
+  lightImgSrc="/posts/unlocking-the-magic-of-closure-serialization-in-qwik/collected-elements-light.svg"
+  imgAlt="collected elements"
+/>
+
+#### 4. `getContext`
+
+The `getContext` function prepares a reference map using the `getObject` function created earlier. This map associates object IDs with their corresponding elements or deserialized objects. An example of the serialized reference map is as follows:
+
+```json title="The serialized reference map"
+{
+  "refs": {
+    "f": "a!",
+    "g": "a!",
+    "q": "j!",
+    "r": "j!"
+  }
+}
+```
+
+For instance, the reference of the decrement button (with an ID of "g") is mapped to `a!`, resulting in a proxy object:
+
+```js
+Proxy {
+  count: SignalImpl { untrackedValue: 10 },
+  $$identifier: SignalDerived {
+    $args$: [
+      Proxy { initialCount: 10, identifier: 'leo' }
+    ],
+    $func$: (p0) => p0.identifier
+  }
+}
+```
+
+Qwik recursively computes all objects for subscriptions and nested objects, as depicted below:
+
+<ImageOnTheme
+  darkImgSrc="/posts/unlocking-the-magic-of-closure-serialization-in-qwik/resolve-reference-map-dark.svg"
+  lightImgSrc="/posts/unlocking-the-magic-of-closure-serialization-in-qwik/resolve-reference-map-light.svg"
+  imgAlt="resolve reference map"
+/>
+
+#### 5. `inflateQrl`
+
+Lastly, `inflateQrl` inflates the `captureRef` array within the internal QRL. This inflation is achieved by combining the QRL's capture with the previously computed reference, resulting in an array of closures. This array is then returned by `useLexicalScope`, allowing event listeners to retrieve closures directly from the `captureRef` array, avoiding the need for their execution within the component's template.
+
+With these steps, Qwik empowers the resumability of event listeners, enabling efficient and streamlined execution while maintaining the desired state.
+
+## Analyzing the HTML Code
+
+```html {6}
+<html q:container="paused" q:base="build">
+  <body>
+    <p>Hello Qwik</p>
+    <p><!--t=8-->0<!----></p>
+    <button
+      on:click="/src/routes_component_div_button_onclick_gurwhjlhap8.js#routes_component_div_button_onClick_GURwHjlHAp8[0]"
+      q:id="9"
+    >
+      increment
+    </button>
+  </body>
+  <script type="qwik/json">
+    {
+      "refs": {
+        "9": "0"
+      },
+      "ctx": {},
+      "objs": ["\u00121", 0, "\u00110 @0", "#8"],
+      "subs": [["3 #8 2 #8"]]
+    }
+  </script>
+  <script q:func="qwik/json">
+    document.currentScript.qFuncs = [(p0) => p0.value * 10];
+  </script>
+</html>
+```
+
+Upon closer inspection, the following key elements come into focus:
+
+1. The HTML structure specifies that the container is in a paused state (`q:container="paused"`).
+1. The base URL for the container is set to the "build" directory (`q:base="build"`).
+1. The HTML body contains various elements, including paragraphs and a button.
+1. The button is associated with an `on:click` event that triggers the execution of the the `routes_component_div_button_onClick_GURwHjlHAp8` symbol with the first captured reference object in the JavaScript file (`/src/routes_component_div_button_onclick_gurwhjlhap8.js`).
+1. The button is assigned a unique ID (`q:id="9"`).
+1. The serialized data is provided within the `<script type="qwik/json">` block. It includes references, context, objects, and subscriptions.
+1. The reference for the increment button (ID: "9") is mapped to `"0"`.
+1. The `getObject("0")` function will return a `SignalImpl` object since it is prefixed with `"\u0012"`.
+1. The object "0" has a subscription `"3 #8 2 #8"`, indicating that the element with ID "8" subscribes to this signal.
+1. The subscription is revived using `getObject("2")`, resulting in a `SignalDerived` object. It has [object "0"] as arguments and `(p0) => p0.value \* 10` as the transform function.
+1. Further revival is performed on the nested object. The signal contains an untrackedValue with a value of "1". Using `getObject("1")` retrieves 0.
+1. Finally, useLexicalScope returns the `[SignalImpl { untrackedValue: 10 }]` array to the `routes_component_div_button_onClick_GURwHjlHAp8` symbol.
+
+By understanding these details, we gain insights into the serialized data, transform functions, and the overall behavior of the components involved.
+
+## Conclusion
+
+In conclusion, Qwik's resumability feature magically 🪄 eliminates the need to execute templates for retrieving event listeners. This means that there is no requirement to download state in order to execute the templates. Qwik achieves this by making all of the code lazily loadable, ensuring that it is only downloaded when a user interacts with the listener.
+
+With this approach, Qwik significantly improves performance by deferring the execution of code until it is actually needed. This results in faster load times and a more efficient user experience, especially on slower mobile devices.
+
+Run, don't walk, and become a performance wizard. 🧙‍♀️ 🧙
