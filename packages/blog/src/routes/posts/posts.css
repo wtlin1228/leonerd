@@ -93,8 +93,8 @@
 }
 
 .post article p {
-  margin-top: 1.6rem;
-  margin-bottom: 0.9rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
   font-size: 16px;
   font-weight: 400;
   line-height: 1.7;
@@ -103,6 +103,7 @@
 
 .post article li p {
   margin-top: 0;
+  margin-bottom: 0;
 }
 
 .post article ul,
@@ -122,7 +123,7 @@
 }
 
 .post article li {
-  @apply my-1;
+  margin-top: 10px;
   @apply pl-2;
 }
 
