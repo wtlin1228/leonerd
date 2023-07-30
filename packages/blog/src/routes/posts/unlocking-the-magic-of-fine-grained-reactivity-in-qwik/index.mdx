@@ -18,7 +18,7 @@ Qwik's approach to achieving reactivity involves a three-step process: creating 
 
 ### 1. Creating the Reactivity Graph
 
-In Qwik, the reactivity graph is created during Server-Side Rendering (SSR) or Static Site Generation (SSG) by executing the components once. Here's an example of explicit reactivity by using `useComputed$`:
+In Qwik, the reactivity graph is created during SSR/SSG by executing the components once. Here's an example of explicit reactivity by using `useComputed$`:
 
 ```tsx
 export const ExplicitUseComputed = component$(() => {
@@ -216,7 +216,7 @@ Let's explore a couple of examples to better understand the challenges and possi
 
 Consider the following example where the `ExplicitUseResource` component utilizes the `useResource$()` hook to fetch data and render a list of Pokemon based on the `count` Signal:
 
-```tsx
+```tsx {16-20} /useResource$/#a
 export const ExplicitUseResource = component$(() => {
   const count = useSignal(1);
 
@@ -248,7 +248,7 @@ In this case, because the number of Pokemon displayed in the list changes based 
 
 Now, consider the following example where the `RemoveComponentConditionally` component conditionally renders the `Display` component based on the `count` Signal:
 
-```tsx
+```tsx {8}
 export const RemoveComponentConditionally = component$(() => {
   const count = useSignal(0);
 
