@@ -1,0 +1,223 @@
+---
+title: Scaling Challenges Solved by Monorepo
+excerpt: Discover the power of Monorepo management with Nx to scale your team's codebase efficiently, automate tasks, and optimize collaboration. Embrace the Single Version Policy for standardized tooling and enhanced code maintainability.
+date: 2022-09-20
+tags: [monorepo, nx, team-scaling]
+featured: /posts/scaling-challenges-solved-by-monorepo/default-cover.webp
+---
+
+# Scaling Challenges Solved by Monorepo
+
+As our team expands, we find ourselves grappling with various challenges in our code management. We currently have a mix of polyrepos and monorepos, which makes the situation even more complex. The growing team size has led to increased communication overhead, especially when dealing with the following issues:
+
+1. **Renaming Complexity**: Frequent renaming to align with new business domains becomes a tedious task.
+2. **Restructuring Challenges**: Making code shareable in new contexts requires extensive restructuring efforts.
+3. **Code Placement Decisions**: Determining the appropriate location for each code snippet poses a constant challenge.
+4. **Library Publishing Hassles**: Coordinating library publishing in a specific order can be time-consuming.
+5. **Serial CI Execution**: Running Continuous Integration (CI) processes for each library in sequence slows down our development workflow.
+6. **Post-Publish Checks**: After publishing a library, verifying whether any issues arise becomes a manual and error-prone process.
+7. **Migration Planning**: Planning and executing migrations across multiple repositories is complex and resource-intensive.
+8. **Monolith Limitations**: Our legacy monolithic repository hampers the creation of new products.
+
+To address these issues and simplify our code management, we are exploring the adoption of a Monorepo management approach. Monorepo presents a promising solution, offering the potential to overcome all the challenges mentioned above. In the following sections, we will explore how Nx, a powerful Monorepo management tool, can help us resolve these issues with real-world case examples. By leveraging Nx's features and capabilities, we aim to simplify our development processes, boost collaboration, and enhance overall efficiency in our growing team. Let's dive in and discover how Monorepo can be the answer to our scaling problems.
+
+## Let Generators Handle the Regular Tasks
+
+When faced with the need to rename elements to align with new business domains or restructure code for greater sharability, Nx provides a powerful solution through its generators.
+
+For instance, to accomplish renaming or restructuring, we can simply use the following command:
+
+```bash
+nx generate @nx/workspace:move --destination=target_folder --projectName=your_project
+```
+
+Furthermore, Nx enables us to create custom generators, which prove immensely beneficial when setting up more personalized starter projects or integrating tools like `graphql-codegen` or `code-like-doc` into existing projects.
+
+Let's take a look at how we can create our own local generators:
+
+```typescript
+nx generate @nx/plugin:plugin my-plugin
+
+nx generate @nx/plugin:generator create-client-starter --project=my-plugin
+nx generate @nx/plugin:generator setup-graphql-codegen --project=my-plugin
+nx generate @nx/plugin:generator setup-code-like-doc --project=my-plugin
+```
+
+By leveraging the `@nx/devkit` APIs, such as `updateJson` to add a task target or `generateFiles` to generate specific files, we can fully automate these repetitive tasks.
+
+As an illustration, here's an example of the `setup-graphql-codegen` generator:
+
+```json title="src/packages/my-plugin/src/generators/setup-graphql-codegen/schema.json"
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SetupGraphqlCodegen",
+  "title": "",
+  "type": "object",
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "The name of the project.",
+      "alias": "p",
+      "$default": {
+        "$source": "projectName"
+      },
+      "x-prompt": "What is the name of the project to setup codegen?",
+      "x-priority": "important"
+    }
+  },
+  "required": ["projectName"]
+}
+```
+
+```plaintext title="src/packages/my-plugin/src/generators/setup-graphql-codegen/files/codegen.ts.template" /<%= projectName %>/#a
+import type { CodegenConfig } from '@graphql-codegen/cli';
+
+const config: CodegenConfig = {
+  schema: 'https://somewhere/graphql',
+  documents: ['packages/<%= projectName %>/src/**/*.tsx'],
+  generates: {
+    'packages/<%= projectName %>/src/gql/': {
+      preset: 'client',
+      presetConfig: {
+        gqlTagName: 'gql',
+      },
+    },
+  },
+};
+export default config;
+```
+
+```typescript title="src/packages/my-plugin/src/generators/setup-graphql-codegen/generator.ts"
+async function setupGraphqlCodegenGenerator(
+  tree: Tree,
+  options: SetupGraphqlCodegenGeneratorSchema
+) {
+  const codegenTarget: TargetConfiguration = {
+    executor: '@my-org/my-plugin:graphql-codegen',
+    options: {},
+  };
+
+  // Add "codegen" target to "project.json"
+  updateJson(
+    tree,
+    `packages/${options.projectName}/project.json`,
+    (json: ProjectConfiguration) => {
+      if (!json.targets) {
+        json.targets = {};
+      }
+      json.targets['codegen'] = codegenTarget;
+
+      return json;
+    }
+  );
+
+  // Generate "codegen.ts" file in the project root
+  generateFiles(
+    tree,
+    path.join(__dirname, 'files'),
+    `packages/${options.projectName}`,
+    options
+  );
+
+  await formatFiles(tree);
+}
+```
+
+As you can see, generators are incredibly valuable for reducing the time spent on repetitive tasks. Embracing them empowers our team to work more efficiently and enhances overall productivity in our development workflows.
+
+## Standardize Tooling with Executors
+
+Nx comes with a wide range of official executors, such as `@nx/linter:eslint` for linting and `@nx/jest:jest` for testing, which ensure a consistent development environment.
+
+However, there may be scenarios where we need to create our own custom executors. For instance, in the previous section, we employed a custom executor called `@my-org/my-plugin:graphql-codegen`. Setting up a custom executor is straightforward, as demonstrated below:
+
+To start creating a custom executor, we can use the following commands:
+
+```typescript
+nx generate @nx/plugin:plugin my-plugin
+
+nx generate @nx/plugin:executor graphql-codegen --project=my-plugin
+```
+
+The implementation of the custom executor is quite simple, as shown in the code snippet below:
+
+```typescript title="src/packages/my-plugin/src/executors/graphql-codegen/executor.ts"
+async function genExecutor(
+  options: GraphqlCodegenExecutorSchema,
+  context: ExecutorContext
+): Promise<{ success: boolean }> {
+  const configFile = options.configFile || 'codegen.ts';
+  const { stdout, stderr } = await promisify(exec)(
+    `npx graphql-code-generator --config packages/${context.projectName}/${configFile}`
+  );
+  console.log(stdout);
+
+  return { success: !stderr };
+}
+```
+
+Utilizing executors brings immense benefits to our development workflow. When changes occur in our tooling scripts or configurations, we no longer need to modify code scattered across multiple projects. Instead, with a custom executor, we achieve standardized tooling across the entire codebase with ease.
+
+## Dependency Graph + Code Ownership + Module Boundary
+
+One of the most significant advantages of adopting a Monorepo is the improved architectural clarity it provides. By having a high-level view of our entire codebase, we gain a better understanding of where to place new code and identify areas that may benefit from refactoring and restructuring. Personally, this is my favorite feature of the Monorepo approach.
+
+The combination of the Dependency Graph, Code Ownership, and Module Boundary features works in combination to enhance code maintainability. With the Dependency Graph, we can visualize the relationships between different components and libraries, making it easier to identify dependencies and potential issues. Code Ownership ensures that designated teams or individuals take responsibility for specific sections of the codebase, resulting in more organized and efficient collaboration.
+
+## Optimized Task Execution with Task Pipeline
+
+The Monorepo's dependency graph enables an efficient task pipeline, resulting in optimized task execution. By leveraging this pipeline, tasks can be parallelized, eliminating the need to run the Continuous Integration (CI) process for each library serially. This leads to significant time savings and a more productive development workflow.
+
+Moreover, the task pipeline acts as a safeguard, preventing us from breaking anything or leaving consumers behind. Before publishing our libraries or applications, we can thoroughly test all affected artifacts, ensuring a robust and stable codebase. However, it's essential to note that experiencing these benefits relies on having sufficient test coverage and implementing a well-thought-out testing strategy.
+
+For example, let's consider our `graphql-codegen` use case. To run the codegen target before building the application, we can define our own task dependency as follows:
+
+```json
+{
+  "target": {
+    "build": {
+      "dependsOn": [
+        {
+          "projects": "self",
+          "target": "codegen"
+        }
+      ]
+    },
+    "codegen": {
+      // ...
+    }
+  }
+}
+```
+
+With this setup, we ensure that code generation takes place before the application build, avoiding any potential issues that may arise from outdated code.
+
+Thus far, Monorepo has proved itself to be a robust solution, effectively addressing the challenges we encountered. Additionally, one of its powerful features is task result caching, which prevents redundant rebuilds and retesting of the same code. This optimization further improves our development process, maximizing productivity and minimizing time wasted on repetitive tasks.
+
+## Embracing the Single Version Policy
+
+The Single Version Policy requires that developers must not have the option to choose which version of a component to depend upon. While some team members express concerns about this policy, fearing that it enforces simultaneous migration, I believe there are compelling reasons to adopt it.
+
+When upgrading packages, a more efficient approach is to execute the migration through a small group of experts rather than individually across the entire team. This concentrated effort fosters expertise in handling migrations swiftly and accurately. By avoiding a lengthy, incremental migration process, we preserve consistency in our tooling and avoid potential disruptions.
+
+Moreover, maintaining multiple versions can introduce complexities, particularly in guaranteeing that applications run correctly across different environments. This can weaken the benefits of the task pipeline. Ultimately, the overall cost of managing multiple versions outweighs any potential advantages.
+
+On the positive side, the Single Version Policy ensures a single source of truth throughout our codebase. We always know which version of a package is in use, eliminating the need to search for version information within the environment. For internal libraries, this policy ensures that consumers are not left behind when new versions are released, fostering a cohesive development environment.
+
+Additionally, adhering to the Single Version Policy results in a reduction of bundle size, as we only have one version of each package. As illustrated in my post - [Deduplicating JS Bundles](/deduplicating-js-bundles), different versions of libraries can lead to significant duplication in the bundle.
+
+## Transitioning Applications to Maintenance Mode
+
+In some cases, our organization may decide to designate certain projects for maintenance mode. However, the Single Version Policy presents a challenge – we cannot simply leave these applications untouched, as they would require upgrades, migrations, and task runs. While one option is to build them once and exclude them from our dependency graph, this approach poses issues over time. We might encounter critical bugs or need to make lightweight changes, such as updating the website's title for an archived app.
+
+To address this, I propose a different approach – moving the entire application, along with its dependencies, into a separate monorepo. This strategic move allows us to maintain everything as is – all versions remain unchanged, and the building process remains unchanged. As a result, we can easily make necessary fixes or implement lightweight changes without disrupting the main codebase.
+
+## Conclusion
+
+The transition to a monorepo has had a remarkable impact on our codebase, unintentionally transforming it into an 80% library code and 20% application structure. This transformation is a testament to how effortlessly monorepo management handles new libraries, simplifying the development process.
+
+Thanks to the monorepo itself, the burden of manual dependency chain maintenance has been lifted, enabling us to focus on development rather than complex versioning concerns. Moreover, the code ownership mindset continues to thrive as designated code owners handle breaking changes, promoting a sense of responsibility and accountability within the team.
+
+Our architecture has vastly improved, now featuring greater transparency and ease of inspection. Each component's proper boundaries have been established, leading to a more organized and cohesive codebase.
+
+Regardless of the specific monorepo management tool you choose, the advantages remain consistent. As your team scales up and complexity grows, embracing the monorepo approach becomes increasingly valuable. It provides an essential foundation for efficient collaboration, code maintainability, and future growth.
