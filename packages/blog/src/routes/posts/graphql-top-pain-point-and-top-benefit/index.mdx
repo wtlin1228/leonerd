@@ -262,6 +262,33 @@ This pattern offers several benefits:
 
 If you're interested in this pattern, I highly recommend reading this great post - [Unleash the power of Fragments with GraphQL Codegen](https://the-guild.dev/blog/unleash-the-power-of-fragments-with-graphql-codegen)
 
+#### The Pitfalls of Using graphql-anywhere.filter() for Fragment Masking Pattern
+
+Using the `filter` function in this context can lead to a problematic outcome. Let's break down the reasons using a simple example: Imagine you have an original dataset of size N getting from a GraphQL request with D levels and P properties for each level, and the component tree is a simple L-layer binary tree.
+
+When you apply the `filter` function, it triggers a copying process that can repeat itself `(2^L) * (P^D)` times, ultimately creating `2^L` new objects. Considering that each of these objects can be as large as the original dataset (N), you're effectively navigating through this expanded landscape `2^L` times. This level of repetition can significantly impact performance and memory on the client.
+
+To illustrate this further, take a look at the provided code snippet. The `executeSelectionSet` function is called (2^L) times from every component. On each call, there's an additional sequence of Deep copy operations (P^D) through DFS. This compounds the issue, making it apparent why using the `filter` function within the fragment masking pattern isn't recommended.
+
+```ts
+// In the following function, it gets invoked (2^L) times from each component.
+// And with each invocation, it initiates another (P^D) set of Deep copy operations via DFS.
+function executeSelectionSet(
+  selectionSet: SelectionSetNode,
+  rootValue: any,
+  execContext: ExecContext
+) {
+  const result = {};
+  selectionSet.selections.forEach((selection) => {
+    const fragmentResult = executeSelectionSet();
+    // ...
+    merge(result, fragmentResult);
+  });
+}
+```
+
+You can reference the original code here: [graphql-anywhere on npm](https://www.npmjs.com/package/graphql-anywhere?activeTab=code)
+
 ## Conclusion
 
 By utilizing **Error Handling with GraphQL Unions and Interfaces** and **Type Checking with GraphQL Code Generator**, we can overcome one of the top pain points of using GraphQL and start to fully enjoy its benefits. We can avoid dead code and reduce runtime errors, while making our components more reusable. Incorporating these best practices can result in a more efficient and robust codebase, making GraphQL a valuable tool for developing modern applications.
