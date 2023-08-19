@@ -1,0 +1,115 @@
+---
+title: Enhancing UX and DX - The Influence of I18n Workflow
+excerpt: A mismanaged i18n workflow can impede web performance and product releases. In this post, we dive into translation processes and frontend architecture, exploring pitfalls that impact user and developer experiences.
+date: 2023-08-20
+tags: [I18n, UX, DX]
+featured: /posts/enhancing-ux-and-dx-the-influence-of-i18n-workflow/cover.webp
+---
+
+# Enhancing UX and DX - The Influence of I18n Workflow
+
+Got big dreams of your software taking over the world? If that's a solid yes, then you've probably crossed paths with the idea of localization. Making your software work seamlessly worldwide is a real game-changer. But take a wrong workflow with localization could hurt your web performance and slow down your product release. Throughout this post, we'll look at the translation process and frontend architecture, leading to bad UX and DX, and at the end I'll provide some development best practices to help you avoid these common pitfalls.
+
+## Branch Merging
+
+Certain localization platforms offer the convenient capability of creating branches from the master branch. This feature allows for alignment with the established Git workflow. However, it's important to remember that these platforms are designed to enhance the efficiency of your translation process. Therefore, when dealing with elements such as screenshots, tags, status updates, and reviewer inputs, merging them can pose a challenge. Additionally, even though you may expect basic translation merging to function like a `git merge`, it often doesn't. Hence, it's better to not solely depend on the branch merging functionality provided by localization platforms.
+
+## Single Source of Truth
+
+Your codebase should serve as the single source of truth. Once the translation process is completed, all translated and approved files should automatically be submitted as a pull request to the l10n branch in your repository. Relying on the localization platform as your sole source of truth can lead to issues. Consider the scenario where you run your deployment process twice and obtain different results, or when you aim to revert to a specific version but the corresponding branch on your localization platform has been removed. Keep in mind that localization platforms are tools meant to expedite the translation process.
+
+## Extracting Translation Strings
+
+While managing all translation strings manually is feasible for small teams and products, as your team size grows and your product becomes more complex, this approach becomes unrealistic. The development team should automate the process of extracting resource files in one of the formats supported by the localization platform and then upload them to initiate the translation process. Extracting strings from the localized markers in the codebase also prevents the continual addition of unused translations to your codebase. Simplify the work for the translation team by filtering out unchanged strings, pass only the modified ones.
+
+## Translation Files Transfer to Clients
+
+Transferring all of your translation files to the client can result in poor performance. It's advisable to transmit only the language that corresponds to the user's `Accept-Language` or locale cookie. The only scenario in which transferring all translation files is necessary is when your application cannot perform a hard reload and need to respond super fast when the user switches locales. To illustrate, I have conducted a benchmark for a purely client-side rendered application with i18n setup that only renders a `Hello World`, comparing the performance of transferring four different languages (gzipped size: 561.55KB) versus a single language (gzipped size: 153.06KB).
+
+|         | FP (ms) | Memory (MB) | network transfer (ms) | evaluate script (ms) |
+| ------- | :-----: | :---------: | :-------------------: | :------------------: |
+| 4 langs |  628.4  |    8.52     |         173.2         |        206.8         |
+| 1 lang  |  458.2  |      7      |         13.4          |        111.6         |
+
+Measured on MacBook Pro (13-inch, M1, 2020), Memory 16 GB, CPU 6x slow down
+
+## Runtime vs Compile time Translation
+
+There are two ways to do translation: ([reference](https://github.com/mhevery/qwik-i18n#overview))
+
+**Runtime**: Translation is performed at runtime by looking up the translation strings in the translation map.
+
+- PROS:
+  - No build step.
+  - Easy way to test the application in development.
+- CONS:
+  - Translations strings must be eagerly loaded.
+  - Each string is in triplicate. 1) original string, 2) translation string, 3) key to lookup translation string.
+
+**Compile time**: Translation is performed as part of the build step.
+
+- PROS:
+  - Translated strings are inlined into the application. No need to load or look them up at runtime.
+  - Because the strings are inlined, they can be lazy-loaded with application code.
+- CONS:
+
+  - Requires a build step.
+  - User can't change the language without a page refresh. (Or have mixed languages on the same page.)
+
+---
+
+To better understand the performance implications, let's compare these approaches using the following benchmark:
+
+|                   | FP (ms) | Memory (MB) | network transfer (ms) | evaluate script (ms) |
+| ----------------- | :-----: | :---------: | :-------------------: | :------------------: |
+| runtime (4 langs) |  628.4  |    8.52     |         173.2         |        206.8         |
+| runtime (1 lang)  |  458.2  |      7      |         13.4          |        111.6         |
+| compile time      |   383   |    5.48     |          8.2          |         35.4         |
+
+Measured on MacBook Pro (13-inch, M1, 2020), Memory 16 GB, CPU 6x slow down
+
+|                   | FP (s) | Memory (MB) | network transfer (s) | evaluate script (ms) |
+| ----------------- | :----: | :---------: | :------------------: | :------------------: |
+| runtime (4 langs) | 20.54  |     8.6     |        19.508        |        220.8         |
+| runtime (1 lang)  | 6.822  |      7      |        5.924         |        109.6         |
+| compile time      | 2.092  |    5.54     |         1.31         |         35.2         |
+
+Measured on MacBook Pro (13-inch, M1, 2020), Memory 16 GB, CPU 6x slow down, fast 3G Network
+
+## Runtime Translation for SSR / SSG Pages
+
+When using frameworks like React that require rehydration to make your web pages interactive, you'll inevitably need to transfer translation files to the client side. Let's take Next.js as an example. For both statically generated and server-side rendered (SSR) pages, translation files are passed to the client using either the `__NEXT_DATA__` script or the `page.json` mechanism.
+
+Even if you carefully organize your translation files into namespaces and diligently manage their caching using `localStorage` and `cookie`, scalability concerns can still arise. This is particularly true for larger applications. You might find yourself facing two main challenges:
+
+1. **Excessive Namespace Usage:** As your application grows, the number of namespaces could become unwieldy, leading to maintenance difficulties and potential confusion.
+
+2. **Namespace Overload:** Alternatively, when dealing with a large number of translations, you might be tempted to place numerous translations within a single namespace. However, this can lead to namespace bloat and hinder efficient management.
+
+## Three Lessons
+
+### Lesson 1: Limit Localization Platform Usage to Translation
+
+Employ localization platforms exclusively for streamlining the translation process. Avoid expecting them to function like Git for branch merging. It's essential to commit the translated files back into your Git repository. Often, your localization platform offers workflow automation for this purpose.
+
+### Lesson 2: Extract Translation Strings from Source Code
+
+Enhance collaboration with your translation team by extracting translation strings from your source code. Filter out unchanged strings to expedite the translation process and prevent unused translations from entering your source control.
+
+### Lesson 3: Opt for Compile-Time Application Translation
+
+For an improved user experience, opt for compile-time application translation. However, during local development, consider the runtime approach for a more developer-friendly experience.
+
+## Recommended Workflow
+
+1. Build your app with localize marks.
+1. Extract translation strings from the build.
+1. Filter out strings that remain unchanged.
+1. Provide filtered strings to your translation team.
+1. Commit translated files to your repository.
+1. Integrate localized strings with your build.
+1. Deploy and thoroughly test your multi-language application.
+
+## In Conclusion
+
+The demand for applications that support multiple languages is growing within businesses and organizations. Developing such multi-language applications presents a range of challenges, as highlighted in the discussions above. Alongside the pitfalls we've explored, it's essential to address additional considerations such as **interpolation** and **constructing sentences within code**, as detailed in the insightful article [Lessons From Linguistics: i18n Best Practices for Front-End Developers](https://shopify.engineering/internationalization-i18n-best-practices-front-end-developers). By incorporating a comprehensive approach to internationalization, developers can navigate the complexities of building applications that cater to diverse linguistic needs.

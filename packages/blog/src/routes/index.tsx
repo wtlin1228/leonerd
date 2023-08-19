@@ -54,7 +54,8 @@ export const usePostMattersLoader = routeLoader$(async () => {
 
       return dateB.getTime() - dateA.getTime();
     });
-  } catch {
+  } catch (error) {
+    console.log(error);
     console.error('Failed to process the frontmatter of posts');
     return [];
   }
