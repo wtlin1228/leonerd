@@ -1,12 +1,11 @@
 {
   "migrations": [
     {
-      "version": "16.4.1-beta.0",
-      "description": "Changes the testFile config in the vite:test exectutor from a string to an array of strings",
-      "cli": "nx",
-      "implementation": "./src/migrations/update-16-4-1-update-test-file-config/update-16-4-1-test-file-config",
-      "package": "@nx/vite",
-      "name": "update-16-4-1-test-file-config"
+      "version": "1.0.11",
+      "description": "set-proper-tsconfig-path-for-qwik-vite-plugin",
+      "implementation": "./src/migrations/set-proper-tsconfig-path-for-qwik-vite-plugin/set-proper-tsconfig-path-for-qwik-vite-plugin",
+      "package": "qwik-nx",
+      "name": "set-proper-tsconfig-path-for-qwik-vite-plugin"
     }
   ]
 }

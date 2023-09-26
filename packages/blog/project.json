@@ -58,7 +58,7 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["../../coverage/packages/blog"],
+      "outputs": ["../coverage/packages/blog"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/packages/blog"

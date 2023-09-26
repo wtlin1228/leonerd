@@ -1,12 +1,11 @@
 import { join } from 'path';
 import { defineConfig } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { qwikVite } from '@builder.io/qwik/optimizer';
 import { qwikCity } from '@builder.io/qwik-city/vite';
 import { partytownVite } from '@builder.io/partytown/utils';
 import { qwikNxVite } from 'qwik-nx/plugins';
 import rehypePrettyCode from 'rehype-pretty-code';
-
 export default defineConfig({
   cacheDir: '../../node_modules/.vite/packages/blog',
   plugins: [
@@ -43,7 +42,6 @@ export default defineConfig({
                     b: 'rgb(0 103 163 / 56%)',
                     c: 'rgb(100 50 255 / 35%)',
                   }[id];
-
                   const color = {
                     a: 'rgb(255 225 225 / 100%)',
                     b: 'rgb(175 255 255 / 100%)',
@@ -64,6 +62,7 @@ export default defineConfig({
       },
     }),
     qwikVite({
+      tsconfigFileNames: ['tsconfig.app.json'],
       client: {
         outDir: '../../dist/packages/blog/client',
       },
@@ -74,7 +73,7 @@ export default defineConfig({
     partytownVite({
       dest: join(__dirname, '../../dist/packages/blog/client', '~partytown'),
     }),
-    tsconfigPaths({ root: '../../' }),
+    nxViteTsPaths(),
   ],
   server: {
     fs: {

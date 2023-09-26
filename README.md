@@ -10,3 +10,4 @@
 
 1. Run 'nx migrate qwik-nx'
 2. Make sure package.json changes make sense and then run 'npm install'
+3. Run 'nx migrate --run-migrations'
