@@ -7,8 +7,12 @@ featured: /posts/unlocking-the-magic-of-fine-grained-reactivity-in-qwik/cover.we
 ---
 
 import { ImageOnTheme } from '../../../components/image/index.ts';
+import { BlogPostCoverImage } from '../../../components/blog-post-cover-image/blog-post-cover-image.tsx';
 
 # Unlocking the Magic of Fine-Grained Reactivity in Qwik
+
+<BlogPostCoverImage />
+<br />
 
 Reactivity is a fundamental concept in modern frontend frameworks, referring to the automatic update of the user interface in response to changes in the application's state. Among the popular reactive frameworks like React, Angular, Svelte, and Vue, Qwik stands out as a fine-grained reactive framework. Although Solid is currently considered the best in terms of executing components only once, Qwik's unique advantage lies in its resumability feature. Unlike hydration in other frameworks, Qwik can serialize the reactivity graph into HTML, reducing the need to download most of the application code on startup. If you want to delve deeper into how Qwik serializes closures into HTML, you can find my previous post on the subject [here](/posts/unlocking-the-magic-of-closure-serialization-in-qwik).
 

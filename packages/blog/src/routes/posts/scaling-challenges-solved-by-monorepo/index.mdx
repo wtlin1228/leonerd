@@ -6,7 +6,12 @@ tags: [monorepo, nx, team-scaling]
 featured: /posts/scaling-challenges-solved-by-monorepo/cover.webp
 ---
 
+import { BlogPostCoverImage } from '../../../components/blog-post-cover-image/blog-post-cover-image.tsx';
+
 # Scaling Challenges Solved by Monorepo
+
+<BlogPostCoverImage />
+<br />
 
 As our team expands, we find ourselves grappling with various challenges in our code management. We currently have a mix of polyrepos and monorepos, which makes the situation even more complex. The growing team size has led to increased communication overhead, especially when dealing with the following issues:
 
@@ -90,7 +95,7 @@ export default config;
 ```typescript title="src/packages/my-plugin/src/generators/setup-graphql-codegen/generator.ts"
 async function setupGraphqlCodegenGenerator(
   tree: Tree,
-  options: SetupGraphqlCodegenGeneratorSchema
+  options: SetupGraphqlCodegenGeneratorSchema,
 ) {
   const codegenTarget: TargetConfiguration = {
     executor: '@my-org/my-plugin:graphql-codegen',
@@ -108,7 +113,7 @@ async function setupGraphqlCodegenGenerator(
       json.targets['codegen'] = codegenTarget;
 
       return json;
-    }
+    },
   );
 
   // Generate "codegen.ts" file in the project root
@@ -116,7 +121,7 @@ async function setupGraphqlCodegenGenerator(
     tree,
     path.join(__dirname, 'files'),
     `packages/${options.projectName}`,
-    options
+    options,
   );
 
   await formatFiles(tree);
@@ -144,11 +149,11 @@ The implementation of the custom executor is quite simple, as shown in the code 
 ```typescript title="src/packages/my-plugin/src/executors/graphql-codegen/executor.ts"
 async function genExecutor(
   options: GraphqlCodegenExecutorSchema,
-  context: ExecutorContext
+  context: ExecutorContext,
 ): Promise<{ success: boolean }> {
   const configFile = options.configFile || 'codegen.ts';
   const { stdout, stderr } = await promisify(exec)(
-    `npx graphql-code-generator --config packages/${context.projectName}/${configFile}`
+    `npx graphql-code-generator --config packages/${context.projectName}/${configFile}`,
   );
   console.log(stdout);
 

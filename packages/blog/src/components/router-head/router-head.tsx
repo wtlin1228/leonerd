@@ -27,6 +27,7 @@ export const RouterHead = component$(() => {
       <meta property="og:site_name" content="LeoNerd" />
       <meta property="og:locale" content="en_US" />
 
+      {/* setup meta data for social media sharing */}
       {isPost ? (
         <>
           <meta name="description" content={head.frontmatter.excerpt} />
@@ -78,16 +79,41 @@ export const RouterHead = component$(() => {
         </>
       )}
 
-      {head.meta.map((m) => (
-        <meta {...m} />
+      {/* preload the LCP image */}
+      {isPost ? (
+        <link
+          rel="preload"
+          // @ts-expect-error fetchpriority is not supported by all browsers
+          fetchpriority="high"
+          as="image"
+          href={url.origin + head.frontmatter.featured}
+          type="image/webp"
+        />
+      ) : (
+        <link
+          rel="preload"
+          // @ts-expect-error fetchpriority is not supported by all browsers
+          fetchpriority="high"
+          as="image"
+          href={
+            url.origin +
+            // remember to update the LCP image path when publishing a new post
+            '/posts/enhancing-ux-and-dx-the-influence-of-i18n-workflow/cover.webp'
+          }
+          type="image/webp"
+        />
+      )}
+
+      {head.meta.map((m, i) => (
+        <meta key={i} {...m} />
       ))}
 
-      {head.links.map((l) => (
-        <link {...l} />
+      {head.links.map((l, i) => (
+        <link key={i} {...l} />
       ))}
 
-      {head.styles.map((s) => (
-        <style {...s.props} dangerouslySetInnerHTML={s.style} />
+      {head.styles.map((s, i) => (
+        <style key={i} {...s.props} dangerouslySetInnerHTML={s.style} />
       ))}
 
       {import.meta.env.PROD && <Partytown />}

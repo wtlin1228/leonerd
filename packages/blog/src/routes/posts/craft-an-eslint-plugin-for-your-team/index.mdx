@@ -6,7 +6,12 @@ tags: [ESLint, AST, abstract-syntax-trees]
 featured: /posts/craft-an-eslint-plugin-for-your-team/cover.webp
 ---
 
+import { BlogPostCoverImage } from '../../../components/blog-post-cover-image/blog-post-cover-image.tsx';
+
 # Craft an ESLint Plugin for Your Team
+
+<BlogPostCoverImage />
+<br />
 
 When your style guide expands or your team decides to make changes, having those rules in your style lint is the way to go. This way, team members can see the recommended approach in their editor when adding or modifying code. The CI will catch code that doesn't fit the guidelines in every PR, saving time on commenting and requesting changes from the PR owner. Newcomers to your team will also feel more confident in their early contributions. Frontend developers typically use ESLint for linting coding styles, as it offers an excellent interface for adding custom rules. In this post, I'll guide you through creating your own ESLint plugin and explain how to test and document it for streamlined communication and consistent code.
 

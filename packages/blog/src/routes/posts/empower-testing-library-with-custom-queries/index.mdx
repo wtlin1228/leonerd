@@ -6,7 +6,12 @@ tags: [testing, testing-library]
 featured: /posts/empower-testing-library-with-custom-queries/cover.webp
 ---
 
+import { BlogPostCoverImage } from '../../../components/blog-post-cover-image/blog-post-cover-image.tsx';
+
 # Empower Testing Library with Custom Queries
+
+<BlogPostCoverImage />
+<br />
 
 [Testing Library](https://testing-library.com/) offers simple and complete testing utilities that encourage good testing practices. It provides many convenient queries, such as `ByRole` and `ByLabelText`. Furthermore, it also allows us to create our own custom queries.
 
@@ -94,7 +99,7 @@ const [
 ] = buildQueries(
   queryAllByThousandSeparatedNumber,
   getMultipleError,
-  getMissingError
+  getMissingError,
 );
 
 export {
@@ -133,7 +138,7 @@ const customWithin = (element: ReactElement) => within(element, allQueries);
 // Include all queries in the custom render function.
 const customRender = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'queries'>
+  options?: Omit<RenderOptions, 'queries'>,
 ) => render(ui, { queries: allQueries, ...options });
 
 export * from '@testing-library/react';

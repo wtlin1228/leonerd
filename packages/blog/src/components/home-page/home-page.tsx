@@ -33,6 +33,10 @@ export const HomePage = component$(
                     <img
                       src={matter.featured}
                       alt={`cover for post - ${matter.title}`}
+                      decoding="async"
+                      loading={idx === 0 ? 'eager' : 'lazy'}
+                      width={1000}
+                      height={600}
                     ></img>
                   </a>
                   <div class="card-content">
@@ -44,7 +48,12 @@ export const HomePage = component$(
                     </p>
                     <div class="card-footer">
                       <div class="card-avatar">
-                        <img src="/github-avatar.webp" alt="avatar"></img>
+                        <img
+                          src="/github-avatar.webp"
+                          alt="avatar"
+                          height="250"
+                          width="250"
+                        />
                       </div>
                       <div>
                         <p class="card-author">Leo Lin</p>
@@ -59,5 +68,5 @@ export const HomePage = component$(
         </div>
       </main>
     );
-  }
+  },
 );

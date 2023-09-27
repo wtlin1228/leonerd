@@ -7,8 +7,12 @@ featured: /posts/graphql-top-pain-point-and-top-benefit/cover.webp
 ---
 
 import { Image } from '../../../components/image/image.tsx';
+import { BlogPostCoverImage } from '../../../components/blog-post-cover-image/blog-post-cover-image.tsx';
 
 # GraphQL - Top Pain Point and Top Benefit
+
+<BlogPostCoverImage />
+<br />
 
 > In any situation, GraphQL can be very convincing. However, this is because it answers for all basic problems an APIs face anyway.
 
@@ -276,7 +280,7 @@ To illustrate this further, take a look at the provided code snippet. The `execu
 function executeSelectionSet(
   selectionSet: SelectionSetNode,
   rootValue: any,
-  execContext: ExecContext
+  execContext: ExecContext,
 ) {
   const result = {};
   selectionSet.selections.forEach((selection) => {

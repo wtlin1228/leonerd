@@ -7,8 +7,12 @@ featured: /posts/visualize-react-fiber-tree-with-ascii-art/cover.webp
 ---
 
 import { Image } from '../../../components/image/image.tsx';
+import { BlogPostCoverImage } from '../../../components/blog-post-cover-image/blog-post-cover-image.tsx';
 
 # Visualize React Fiber Tree with ASCII Art
+
+<BlogPostCoverImage />
+<br />
 
 React Fiber represents a significant shift in the framework's internal engine, designed to enhance performance and optimize its functionality. Introduced as the default reconciler in React 16 and later versions, Fiber is a comprehensive overhaul of React's reconciliation algorithm that addresses various longstanding issues.
 
@@ -243,7 +247,7 @@ export function updateContainer(
   element: ReactNodeList,
   container: OpaqueRoot,
   parentComponent: ?React$Component<any, any>,
-  callback: ?Function
+  callback: ?Function,
 ): Lane {
   // emit...
 
@@ -289,7 +293,7 @@ function makePadStartWithChalkColor(chalkColor: CORAL_CHALK | PARAKEET_CHALK) {
     return (
       Array.from(
         { length: padStartLength - source.length },
-        () => padStartString
+        () => padStartString,
       ).join('') + chalk.hex(chalkColor)(source)
     );
   };
