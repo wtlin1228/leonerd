@@ -1,4 +1,5 @@
 import { component$, useStylesScoped$ } from '@builder.io/qwik';
+import { Link } from '@builder.io/qwik-city';
 
 import { z } from '@builder.io/qwik-city';
 
@@ -29,22 +30,24 @@ export const HomePage = component$(
             return (
               <div class={containerClass} key={matter.title}>
                 <article class="card">
-                  <a class="card-image" href={matter.url}>
-                    <img
-                      src={matter.featured}
-                      alt={`cover for post - ${matter.title}`}
-                      decoding="async"
-                      loading={idx === 0 ? 'eager' : 'lazy'}
-                      width={1000}
-                      height={600}
-                    ></img>
-                  </a>
+                  <div class="card-image">
+                    <Link href={matter.url}>
+                      <img
+                        src={matter.featured}
+                        alt={`cover for post - ${matter.title}`}
+                        decoding="async"
+                        loading={idx === 0 ? 'eager' : 'lazy'}
+                        width={1000}
+                        height={600}
+                      ></img>
+                    </Link>
+                  </div>
                   <div class="card-content">
                     <h3 class="card-title">
-                      <a href={matter.url}>{matter.title}</a>
+                      <Link href={matter.url}>{matter.title}</Link>
                     </h3>
                     <p class="card-description">
-                      <a href={matter.url}>{matter.excerpt}</a>
+                      <Link href={matter.url}>{matter.excerpt}</Link>
                     </p>
                     <div class="card-footer">
                       <div class="card-avatar">

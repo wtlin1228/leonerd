@@ -4,6 +4,7 @@ import {
   useStylesScoped$,
   useVisibleTask$,
 } from '@builder.io/qwik';
+import { Link } from '@builder.io/qwik-city';
 
 import { GlobalStore } from '../../context';
 import {
@@ -40,10 +41,12 @@ export const Header = component$(() => {
   return (
     <header>
       <div class="logo">
-        <a href="/">
-          <span class="sr-only">LeoNerd Homepage</span>
-          <LeoNerdLogo width={103} />
-        </a>
+        <div class="leonerd-logo">
+          <Link href="/">
+            <span class="sr-only">LeoNerd Homepage</span>
+            <LeoNerdLogo width={103} />
+          </Link>
+        </div>
       </div>
       <ul>
         <li>

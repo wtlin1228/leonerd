@@ -9,7 +9,8 @@ header {
   margin-right: auto;
 }
 
-header .logo a {
+header .logo a,
+header .logo .leonerd-logo {
   display: inline-block;
   padding: 16px 10px 7px 6px;
 }
