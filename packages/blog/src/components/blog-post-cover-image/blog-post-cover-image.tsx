@@ -11,6 +11,7 @@ export const BlogPostCoverImage = component$(() => {
       height="600"
       decoding="async"
       loading="eager"
+      style={`view-transition-name: img-${head.title.split(' ').join('-')}`}
     />
   );
 });

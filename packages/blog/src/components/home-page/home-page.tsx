@@ -39,6 +39,9 @@ export const HomePage = component$(
                         loading={idx === 0 ? 'eager' : 'lazy'}
                         width={1000}
                         height={600}
+                        style={`view-transition-name: img-${matter.title
+                          .split(' ')
+                          .join('-')}`}
                       ></img>
                     </Link>
                   </div>
