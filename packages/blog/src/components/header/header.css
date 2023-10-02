@@ -32,3 +32,27 @@ header li {
 header li a:hover svg {
   opacity: 0.8;
 }
+
+.about-link {
+  font-size: 18px;
+  text-underline-offset: 8px;
+  margin-block-start: 5px;
+}
+
+.about-link:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 600px) {
+  .about-link {
+    margin-inline-end: 10px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .about-link {
+    font-size: 20px;
+    margin-inline-end: 20px;
+    text-underline-offset: 10px;
+  }
+}

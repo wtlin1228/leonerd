@@ -49,6 +49,10 @@ export const Header = component$(() => {
         </div>
       </div>
       <ul>
+        <li class="about-link">
+          <Link href="/about">about</Link>
+        </li>
+
         <li>
           <ThemeToggle />
         </li>
