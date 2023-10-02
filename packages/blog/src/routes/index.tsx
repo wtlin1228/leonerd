@@ -26,9 +26,9 @@ export const usePostMattersLoader = routeLoader$(async () => {
             (vFile) => {
               matter(vFile, { strip: true });
               return vFile;
-            }
-          )
-        )
+            },
+          ),
+        ),
     );
 
     const postMatters = vFiles.reduce<(PostMatter & { url: string })[]>(
@@ -45,7 +45,7 @@ export const usePostMattersLoader = routeLoader$(async () => {
 
         return acc;
       },
-      []
+      [],
     );
 
     return postMatters.sort((a, b) => {
@@ -69,11 +69,72 @@ export default component$(() => {
 
 export const head: DocumentHead = {
   title: 'Welcome to LeoNerd',
+  links: [
+    {
+      rel: 'preload',
+      // @ts-expect-error fetchpriority is not supported by all browsers
+      fetchpriority: 'high',
+      as: 'image',
+      type: 'image/webp',
+      // remember to update the LCP image path when publishing a new post
+      href: '/posts/enhancing-ux-and-dx-the-influence-of-i18n-workflow/cover.webp',
+    },
+  ],
   meta: [
     {
       name: 'description',
       content:
         "Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge.",
+    },
+    {
+      property: 'og:title',
+      content: 'Welcome to LeoNerd',
+    },
+    {
+      property: 'og:description',
+      content:
+        "Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge.",
+    },
+    {
+      property: 'og:image',
+      content: import.meta.env.PUBLIC_BLOG_URL + '/icon-logo.webp',
+    },
+    {
+      property: 'og:image:alt',
+      content: 'Image of LeoNerd',
+    },
+    {
+      property: 'og:image:width',
+      content: '250',
+    },
+    {
+      name: 'og:image:height',
+      content: '250',
+    },
+    {
+      name: 'twitter:card',
+      content: 'summary_large_image',
+    },
+    {
+      name: 'twitter:site',
+      content: '@WeiTangLin1',
+    },
+    {
+      name: 'twitter:title',
+      content: 'Welcome to LeoNerd',
+    },
+    {
+      name: 'twitter:description',
+      content:
+        "Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge.",
+    },
+    {
+      name: 'twitter:image',
+      content: import.meta.env.PUBLIC_BLOG_URL + '/icon-logo.webp',
+    },
+    {
+      name: 'twitter:image:alt',
+      content: 'Image of LeoNerd',
     },
   ],
 };

@@ -23,8 +23,72 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  // This will be used to resolve the <title> of the page
-  title: '',
-  meta: [],
-  links: [],
+  title: 'About Me | LeoNerd',
+  // links: [
+  //   {
+  //     rel: 'preload',
+  //     // @ts-expect-error fetchpriority is not supported by all browsers
+  //     fetchpriority: 'high',
+  //     as: 'image',
+  //     type: 'image/webp',
+  //     href: '/about/cover.webp',
+  //   },
+  // ],
+  // meta: [
+  //   {
+  //     name: 'description',
+  //     content:
+  //       "Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge.",
+  //   },
+  //   {
+  //     property: 'og:title',
+  //     content: 'About Me | LeoNerd',
+  //   },
+  //   {
+  //     property: 'og:description',
+  //     content:
+  //       "Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge.",
+  //   },
+  //   {
+  //     property: 'og:image',
+  //     content: import.meta.env.PUBLIC_BLOG_URL + '/about/cover.webp',
+  //   },
+  //   {
+  //     property: 'og:image:alt',
+  //     content: 'Image for about page',
+  //   },
+  //   {
+  //     property: 'og:image:width',
+  //     content: '1000',
+  //   },
+  //   {
+  //     name: 'og:image:height',
+  //     content: '600',
+  //   },
+  //   {
+  //     name: 'twitter:card',
+  //     content: 'summary_large_image',
+  //   },
+  //   {
+  //     name: 'twitter:site',
+  //     content: '@WeiTangLin1',
+  //   },
+  //   {
+  //     name: 'twitter:title',
+  //     content: 'About Me | LeoNerd',
+  //   },
+  //   {
+  //     name: 'twitter:description',
+  //     content:
+  //       "Explore LeoNerd's World, a captivating blog where technology, personal growth, and creativity converge.",
+  //   },
+  //   {
+  //     name: 'twitter:image',
+  //     content: import.meta.env.PUBLIC_BLOG_URL + '/about/cover.webp',
+  //   },
+  //   {
+  //     name: 'twitter:image:alt',
+  //     content: 'Image for about page',
+  //   },
+  // ],
 };
